@@ -29,6 +29,13 @@ cache = {
     "last_update": None,
 }
 
+# ─── PRICE PERSISTENCE ───
+last_known_price = None
+last_known_bid = None
+last_known_ask = None
+last_known_spread = None
+last_known_change = None
+
 # ═══════════════════════════════════════════════
 # FETCH CANDLES
 # ═══════════════════════════════════════════════
@@ -37,7 +44,6 @@ def fetch_candles(tf, limit=200, retries=3):
         try:
             raw = bq.ohlc(SYMBOL, interval=tf, limit=limit)
             if not raw:
-                print(f"[CANDLE EMPTY {tf}] attempt {attempt+1}")
                 time.sleep(1)
                 continue
             candles = []
@@ -208,17 +214,14 @@ def build_profile_from_candles(candles, bins=50):
 def refresh_data():
     while True:
         try:
-            print(f"[REFRESH] Starting cycle...")
             for tf in ["1m", "5m", "15m", "1h", "4h", "1d"]:
                 candles = fetch_candles(TF_MAP[tf], limit=200)
                 if candles:
                     cache["candles"][tf] = candles
-                    print(f"[REFRESH] {tf}: {len(candles)} candles")
 
             c1m = cache["candles"].get("1m", [])
             if c1m:
                 cache["clusters"] = build_clusters(c1m, num_clusters=15)
-                print(f"[REFRESH] Clusters: {len(cache['clusters'])}")
 
             h1 = cache["candles"].get("1h", [])
             if h1:
@@ -231,39 +234,51 @@ def refresh_data():
                     print(f"[REFRESH] POC={result['poc']:.2f}")
         except Exception as e:
             print(f"[REFRESH ERROR] {e}")
-        time.sleep(30)  # 30 seconds
+        time.sleep(30)
 
 def ticker():
+    global last_known_price, last_known_bid, last_known_ask, last_known_spread, last_known_change
     while True:
         try:
             t = bq.tick(SYMBOL)
             if t and t.get("mid"):
-                cache["price"] = t.get("mid")
+                mid = t.get("mid")
+                cache["price"] = mid
                 cache["bid"] = t.get("bid")
                 cache["ask"] = t.get("ask")
                 cache["change"] = t.get("dayDiffPercent")
                 cache["spread"] = t.get("spread")
                 cache["last_update"] = time.strftime('%H:%M:%S')
-                print(f"[TICK] {cache['price']}")
+
+                # Save to persistent vars
+                last_known_price = mid
+                last_known_bid = t.get("bid")
+                last_known_ask = t.get("ask")
+                last_known_spread = t.get("spread")
+                last_known_change = t.get("dayDiffPercent")
+                print(f"[TICK] {mid}")
             else:
-                # Fallback: use last 1m candle close
-                c1m = cache["candles"].get("1m", [])
-                if c1m:
-                    last = c1m[-1]
-                    cache["price"] = last["close"]
-                    cache["bid"] = last["close"]
-                    cache["ask"] = last["close"]
-                    cache["spread"] = 0
-                    cache["change"] = 0
+                # Fallback: use last known
+                if last_known_price:
+                    cache["price"] = last_known_price
+                    cache["bid"] = last_known_bid
+                    cache["ask"] = last_known_ask
+                    cache["spread"] = last_known_spread
+                    cache["change"] = last_known_change
                     cache["last_update"] = time.strftime('%H:%M:%S')
-                    print(f"[TICK-FALLBACK] {cache['price']}")
+                else:
+                    c1m = cache["candles"].get("1m", [])
+                    if c1m:
+                        cache["price"] = c1m[-1]["close"]
+                        cache["last_update"] = time.strftime('%H:%M:%S')
         except Exception as e:
             print(f"[TICK ERROR] {e}")
-            c1m = cache["candles"].get("1m", [])
-            if c1m:
-                cache["price"] = c1m[-1]["close"]
+            if last_known_price:
+                cache["price"] = last_known_price
+                cache["bid"] = last_known_bid
+                cache["ask"] = last_known_ask
                 cache["last_update"] = time.strftime('%H:%M:%S')
-        time.sleep(5)  # 5 seconds
+        time.sleep(5)
 
 # ═══════════════════════════════════════════════
 # ROUTES
@@ -293,7 +308,7 @@ def api_clusters():
     return jsonify({"clusters": cache["clusters"]})
 
 # ═══════════════════════════════════════════════
-# INITIAL LOAD + BACKGROUND THREADS (MODULE LEVEL)
+# INITIAL LOAD + BACKGROUND THREADS
 # ═══════════════════════════════════════════════
 print("[START] GEX Order Flow initial load...")
 
@@ -318,11 +333,9 @@ if h1:
         cache["profile"] = result["profile"]
         print(f"[START] POC={result['poc']:.2f}")
 
-# ─── BACKGROUND THREADS START ───
 threading.Thread(target=refresh_data, daemon=True).start()
 threading.Thread(target=ticker, daemon=True).start()
 print("[START] Background threads started")
 
 if __name__ == "__main__":
-    print("\n[LOCAL] http://localhost:5000\n")
     app.run(host="0.0.0.0", port=5000, debug=False)
