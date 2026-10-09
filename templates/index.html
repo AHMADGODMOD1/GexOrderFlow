@@ -348,7 +348,7 @@ function renderCluster(clusters) {
 
 async function fetchCandles(tf) {
   try {
-    const res = await fetch(`/api/candles?tf=${tf}`);
+    const res = await fetch(`/api/candles?tf=${tf}&t=${Date.now()}`);
     const d = await res.json();
     if (!d.candles || d.candles.length === 0) return;
     const ohlcData = d.candles.map(c => ({
@@ -366,7 +366,7 @@ async function fetchCandles(tf) {
 
 async function fetchClusters() {
   try {
-    const res = await fetch('/api/clusters');
+    const res = await fetch('/api/clusters?t=' + Date.now());
     const d = await res.json();
     renderCluster(d.clusters);
   } catch (e) { console.error(e); }
@@ -374,10 +374,10 @@ async function fetchClusters() {
 
 async function fetchStatus() {
   try {
-    const res = await fetch('/api/status');
+    const res = await fetch('/api/status?t=' + Date.now());
     const d = await res.json();
 
-    // ─── FALLBACK: agar price null hai, POC use karo ───
+    // Fallback: agar price null hai, POC use karo
     let displayPrice = d.price;
     if (!displayPrice || displayPrice === null) {
       displayPrice = d.poc;
@@ -399,7 +399,6 @@ async function fetchStatus() {
       document.getElementById('status-spread').textContent = d.spread.toFixed(2);
     }
 
-    // Level table
     if (d.poc) {
       document.getElementById('lvl-poc').textContent = d.poc.toFixed(2);
       if (displayPrice) {
@@ -431,7 +430,6 @@ async function fetchStatus() {
       else { el.textContent = 'BELOW POC'; el.className = 'val-down'; }
     }
 
-    // Volume Profile
     if (d.profile && d.profile.length > 0) {
       const now = Math.floor(Date.now() / 1000);
       const vpData = d.profile.map((p, i) => ({
@@ -473,9 +471,11 @@ window.addEventListener('load', () => {
   fetchCandles(currentTF);
   fetchClusters();
   fetchStatus();
-  setInterval(fetchStatus, 5000);      // 5 seconds (was 2)
-  setInterval(fetchClusters, 5000);
-  setInterval(() => fetchCandles(currentTF), 30000);
+
+  // ═══ SAB 5 SECOND UPDATE ═══
+  setInterval(fetchStatus, 5000);                       // price 5s
+  setInterval(fetchClusters, 5000);                     // clusters 5s
+  setInterval(() => fetchCandles(currentTF), 30000);    // candles 30s
 });
 </script>
 
