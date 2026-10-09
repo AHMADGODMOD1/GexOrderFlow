@@ -376,9 +376,16 @@ async function fetchStatus() {
   try {
     const res = await fetch('/api/status');
     const d = await res.json();
-    if (d.price) {
+
+    // ─── FALLBACK: agar price null hai, POC use karo ───
+    let displayPrice = d.price;
+    if (!displayPrice || displayPrice === null) {
+      displayPrice = d.poc;
+    }
+
+    if (displayPrice) {
       const el = document.getElementById('price');
-      el.textContent = d.price.toFixed(2);
+      el.textContent = displayPrice.toFixed(2);
       el.className = 'symbol-price ' + (d.change >= 0 ? '' : 'down');
     }
     if (d.change !== null && d.change !== undefined) {
@@ -391,36 +398,40 @@ async function fetchStatus() {
     if (d.spread !== null && d.spread !== undefined) {
       document.getElementById('status-spread').textContent = d.spread.toFixed(2);
     }
+
+    // Level table
     if (d.poc) {
       document.getElementById('lvl-poc').textContent = d.poc.toFixed(2);
-      if (d.price) {
-        const dist = d.price - d.poc;
+      if (displayPrice) {
+        const dist = displayPrice - d.poc;
         const el = document.getElementById('lvl-poc-dist');
         el.textContent = (dist >= 0 ? '+' : '') + dist.toFixed(1);
         el.className = dist >= 0 ? 'val-up' : 'val-down';
       }
     }
-    if (d.hvn && d.hvn.length > 0 && d.price) {
-      const n = d.hvn.reduce((a, b) => Math.abs(b - d.price) < Math.abs(a - d.price) ? b : a);
+    if (d.hvn && d.hvn.length > 0 && displayPrice) {
+      const n = d.hvn.reduce((a, b) => Math.abs(b - displayPrice) < Math.abs(a - displayPrice) ? b : a);
       document.getElementById('lvl-hvn').textContent = n.toFixed(2);
       const el = document.getElementById('lvl-hvn-dist');
-      el.textContent = (n - d.price >= 0 ? '+' : '') + (n - d.price).toFixed(1);
-      el.className = n - d.price >= 0 ? 'val-up' : 'val-down';
+      el.textContent = (n - displayPrice >= 0 ? '+' : '') + (n - displayPrice).toFixed(1);
+      el.className = n - displayPrice >= 0 ? 'val-up' : 'val-down';
     }
-    if (d.lvn && d.lvn.length > 0 && d.price) {
-      const n = d.lvn.reduce((a, b) => Math.abs(b - d.price) < Math.abs(a - d.price) ? b : a);
+    if (d.lvn && d.lvn.length > 0 && displayPrice) {
+      const n = d.lvn.reduce((a, b) => Math.abs(b - displayPrice) < Math.abs(a - displayPrice) ? b : a);
       document.getElementById('lvl-lvn').textContent = n.toFixed(2);
       const el = document.getElementById('lvl-lvn-dist');
-      el.textContent = (n - d.price >= 0 ? '+' : '') + (n - d.price).toFixed(1);
-      el.className = n - d.price >= 0 ? 'val-up' : 'val-down';
+      el.textContent = (n - displayPrice >= 0 ? '+' : '') + (n - displayPrice).toFixed(1);
+      el.className = n - displayPrice >= 0 ? 'val-up' : 'val-down';
     }
-    if (d.price && d.poc) {
-      const dist = d.price - d.poc;
+    if (displayPrice && d.poc) {
+      const dist = displayPrice - d.poc;
       const el = document.getElementById('lvl-zone');
       if (Math.abs(dist) < 0.5) { el.textContent = 'AT POC'; el.className = 'val-poc'; }
       else if (dist > 0) { el.textContent = 'ABOVE POC'; el.className = 'val-up'; }
       else { el.textContent = 'BELOW POC'; el.className = 'val-down'; }
     }
+
+    // Volume Profile
     if (d.profile && d.profile.length > 0) {
       const now = Math.floor(Date.now() / 1000);
       const vpData = d.profile.map((p, i) => ({
@@ -434,9 +445,11 @@ async function fetchStatus() {
       vpSeries.setData(vpData);
       vpChart.timeScale().fitContent();
     }
+
     document.getElementById('status').textContent = 'Live · ' + new Date().toLocaleTimeString();
   } catch (e) {
     document.getElementById('status').textContent = 'Error: ' + e.message;
+    console.error(e);
   }
 }
 
@@ -460,8 +473,8 @@ window.addEventListener('load', () => {
   fetchCandles(currentTF);
   fetchClusters();
   fetchStatus();
-  setInterval(fetchStatus, 2000);
-  setInterval(fetchClusters, 4000);
+  setInterval(fetchStatus, 5000);      // 5 seconds (was 2)
+  setInterval(fetchClusters, 5000);
   setInterval(() => fetchCandles(currentTF), 30000);
 });
 </script>
