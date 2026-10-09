@@ -9,169 +9,598 @@
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html, body {
     width: 100%;
-    font-family: -apple-system, "Segoe UI", Tahoma, sans-serif;
-    background: #131722; color: #d1d4dc; font-size: 12px;
+    font-family: "Segoe UI", Tahoma, sans-serif;
+    background: #0a0b0f; color: #d1d4dc; font-size: 12px;
     overflow: hidden;
   }
   .app { display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
-  .topbar {
-    display: flex; align-items: center; height: 38px;
-    background: #1e222d; border-bottom: 1px solid #2a2e39;
-    padding: 0 10px; gap: 8px; flex-shrink: 0;
+
+  /* ─── MENU BAR ─── */
+  .menubar {
+    display: flex; align-items: center; height: 28px;
+    background: #0f1117; border-bottom: 1px solid #1e2028;
+    padding: 0 8px; gap: 4px; flex-shrink: 0;
+    font-size: 11px; color: #b0b4be;
   }
-  .brand { display: flex; align-items: center; gap: 8px; padding-right: 12px; border-right: 1px solid #2a2e39; margin-right: 4px; }
-  .brand-logo { font-size: 13px; font-weight: 700; color: #2962ff; letter-spacing: 0.5px; }
-  .brand-tag { font-size: 9px; color: #26a69a; padding: 1px 5px; background: rgba(38,166,154,0.15); border-radius: 2px; font-weight: 600; }
-  .tf-btn {
-    height: 24px; min-width: 30px; padding: 0 8px;
-    font-size: 11px; font-weight: 600;
-    background: transparent; color: #787b86;
-    border: none; border-radius: 3px; cursor: pointer;
-    font-family: "Consolas", monospace;
+  .menu-item {
+    padding: 4px 10px; cursor: pointer;
+    border-radius: 3px; transition: background 0.15s;
   }
-  .tf-btn:hover { background: #2a2e39; color: #d1d4dc; }
-  .tf-btn.active { background: #2962ff; color: #fff; }
-  .tb-sep { width: 1px; height: 20px; background: #2a2e39; margin: 0 4px; }
-  .tb-btn {
-    height: 24px; padding: 0 10px; font-size: 11px;
-    background: #2a2e39; color: #d1d4dc;
-    border: 1px solid #363a45; border-radius: 3px;
-    cursor: pointer; font-family: "Consolas", monospace;
+  .menu-item:hover { background: #1e2028; color: #fff; }
+  .menu-sep { width: 1px; height: 16px; background: #1e2028; margin: 0 4px; }
+  .menu-spacer { flex: 1; }
+  .menu-title {
+    text-align: center; color: #5a5e68; font-size: 10px;
+    font-weight: 600; letter-spacing: 0.5px;
   }
-  .tb-btn:hover { background: #363a45; }
-  .tb-btn.warn { background: #d32f2f; color: #fff; border-color: #d32f2f; }
-  .tb-spacer { flex: 1; }
-  .timer-badge {
+
+  /* ─── TOOLBAR ─── */
+  .toolbar {
+    display: flex; align-items: center; height: 34px;
+    background: #0f1117; border-bottom: 1px solid #1e2028;
+    padding: 0 10px; gap: 6px; flex-shrink: 0;
+  }
+  .brand {
     display: flex; align-items: center; gap: 6px;
-    padding: 2px 10px;
-    background: rgba(41, 98, 255, 0.15);
-    border: 1px solid rgba(41, 98, 255, 0.4);
-    border-radius: 4px;
-    font-family: "Consolas", monospace;
-    font-size: 12px; font-weight: 700; color: #2962ff;
-    transition: all 0.3s;
+    padding-right: 12px; border-right: 1px solid #1e2028; margin-right: 4px;
   }
-  .timer-badge.warning { background: rgba(255, 152, 0, 0.2); border-color: rgba(255, 152, 0, 0.5); color: #ff9800; }
-  .timer-badge.danger { background: rgba(239, 83, 80, 0.2); border-color: rgba(239, 83, 80, 0.5); color: #ef5350; animation: timerPulse 1s infinite; }
-  @keyframes timerPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
-  .timer-label { font-size: 9px; color: #787b86; }
-  .timer-value { font-size: 13px; font-weight: 700; }
-  .symbol-info { display: flex; align-items: center; gap: 10px; font-family: "Consolas", monospace; }
-  .symbol-name { font-size: 14px; font-weight: 700; color: #fff; }
-  .symbol-price { font-size: 14px; font-weight: 700; transition: color 0.2s; }
+  .brand-logo { font-size: 12px; font-weight: 800; color: #4a9eff; letter-spacing: 0.8px; }
+  .brand-tag {
+    font-size: 8px; color: #26a69a; padding: 2px 5px;
+    background: rgba(38,166,154,0.15); border-radius: 2px; font-weight: 700;
+  }
+
+  /* ─── TIMEFRAME DROPDOWN ─── */
+  .tf-dropdown {
+    position: relative; display: inline-block;
+  }
+  .tf-dropdown-btn {
+    height: 24px; padding: 0 10px;
+    font-size: 11px; font-weight: 700;
+    background: #1a1d26; color: #fff;
+    border: 1px solid #2a2d38; border-radius: 3px;
+    cursor: pointer; font-family: "Consolas", monospace;
+    display: flex; align-items: center; gap: 6px;
+    min-width: 70px; justify-content: space-between;
+  }
+  .tf-dropdown-btn:hover { background: #22262f; border-color: #3a3d48; }
+  .tf-dropdown-btn::after {
+    content: "▼"; font-size: 8px; color: #6a6e78;
+  }
+  .tf-dropdown-menu {
+    display: none;
+    position: absolute; top: 28px; left: 0;
+    background: #161920; border: 1px solid #2a2d38;
+    border-radius: 4px; padding: 4px;
+    min-width: 80px; z-index: 1000;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+  }
+  .tf-dropdown-menu.show { display: block; }
+  .tf-dropdown-item {
+    padding: 6px 12px; font-size: 11px;
+    color: #b0b4be; cursor: pointer; border-radius: 3px;
+    font-family: "Consolas", monospace;
+    display: flex; justify-content: space-between;
+  }
+  .tf-dropdown-item:hover { background: #22262f; color: #fff; }
+  .tf-dropdown-item.active { background: #2962ff; color: #fff; }
+
+  .tb-sep { width: 1px; height: 20px; background: #1e2028; margin: 0 4px; }
+  .tb-btn {
+    height: 24px; padding: 0 10px; font-size: 10px;
+    background: #1a1d26; color: #b0b4be;
+    border: 1px solid #2a2d38; border-radius: 3px;
+    cursor: pointer; font-family: "Consolas", monospace;
+    font-weight: 600; transition: all 0.15s;
+  }
+  .tb-btn:hover { background: #22262f; color: #fff; border-color: #3a3d48; }
+  .tb-btn.warn { background: #b71c1c; color: #fff; border-color: #b71c1c; }
+  .tb-btn.warn:hover { background: #c62828; }
+  .tb-btn.opt-on { background: #2962ff; color: #fff; border-color: #2962ff; }
+  .tb-btn.opt-on:hover { background: #4a9eff; }
+  .tb-btn.primary { background: #4a9eff; color: #fff; border-color: #4a9eff; }
+  .tb-btn.primary:hover { background: #6ab0ff; }
+  .tb-spacer { flex: 1; }
+
+  .symbol-info { display: flex; align-items: center; gap: 12px; font-family: "Consolas", monospace; }
+  .symbol-name { font-size: 13px; font-weight: 700; color: #fff; }
+  .symbol-price { font-size: 13px; font-weight: 700; }
   .symbol-price.up { color: #26a69a; }
   .symbol-price.down { color: #ef5350; }
-  .symbol-chg { font-size: 11px; color: #26a69a; }
+  .symbol-chg { font-size: 10px; color: #26a69a; }
   .symbol-chg.down { color: #ef5350; }
   .conn-status { display: flex; align-items: center; gap: 5px; font-size: 10px; color: #26a69a; font-family: "Consolas", monospace; }
-  .conn-dot { width: 6px; height: 6px; border-radius: 50%; background: #26a69a; animation: pulse 2s infinite; }
-  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+  .conn-dot { width: 5px; height: 5px; border-radius: 50%; background: #26a69a; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+  /* ─── MAIN LAYOUT ─── */
   .main {
-    flex: 1; display: grid;
-    grid-template-columns: 1fr 460px;
-    gap: 1px; background: #2a2e39;
-    overflow: hidden; min-height: 0;
+    flex: 1;
+    display: grid;
+    grid-template-columns: 200px 200px 1fr 360px;
+    gap: 1px;
+    background: #1e2028;
+    overflow: hidden;
+    min-height: 0;
+    height: calc(100vh - 62px);
   }
-  .left-col { display: flex; flex-direction: column; overflow: hidden; min-height: 0; }
-  .right-col { display: flex; flex-direction: column; gap: 1px; background: #2a2e39; overflow: hidden; min-height: 0; }
-  .panel { background: #131722; display: flex; flex-direction: column; overflow: hidden; min-height: 0; }
+  .col {
+    display: flex; flex-direction: column;
+    background: #0a0b0f; overflow: hidden;
+    min-height: 0; height: 100%; gap: 1px;
+  }
+  .panel {
+    background: #0a0b0f;
+    display: flex; flex-direction: column;
+    overflow: hidden; min-height: 0;
+    flex: 1;
+    position: relative;
+  }
+  .panel.draggable { cursor: move; }
+  .panel.dragging {
+    opacity: 0.5;
+    border: 2px dashed #4a9eff;
+  }
   .panel-header {
     display: flex; align-items: center; justify-content: space-between;
-    height: 24px; background: #1e222d;
-    border-bottom: 1px solid #2a2e39; padding: 0 10px; flex-shrink: 0;
+    height: 24px; background: #0f1117;
+    border-bottom: 1px solid #1e2028; padding: 0 8px; flex-shrink: 0;
+    cursor: move;
+    user-select: none;
   }
-  .panel-title { font-size: 10px; color: #b2b5be; text-transform: uppercase; letter-spacing: 1px; font-weight: 600; }
-  .panel-badge { font-size: 10px; color: #2962ff; font-family: "Consolas", monospace; }
+  .panel-header:hover { background: #13161d; }
+  .panel-title { font-size: 9px; color: #8a8e98; text-transform: uppercase; letter-spacing: 0.8px; font-weight: 700; }
+  .panel-badge { font-size: 9px; color: #4a9eff; font-family: "Consolas", monospace; }
   .panel-body { flex: 1; position: relative; overflow: hidden; min-height: 0; }
-  .cluster-container { height: 100%; overflow-y: auto; overflow-x: hidden; font-family: "Consolas", monospace; font-size: 11px; padding: 2px 0; }
-  .cluster-row {
-    display: grid; grid-template-columns: 48px 1fr 70px 1fr 48px;
-    align-items: center; height: 24px; padding: 0 6px; gap: 4px;
-    border-bottom: 1px solid rgba(42,46,57,0.35);
+
+  /* ─── ORDER BOOK ─── */
+  .ob-container { height: 100%; overflow-y: auto; font-family: "Consolas", monospace; font-size: 10px; background: #0a0b0f; }
+  .ob-header {
+    display: grid; grid-template-columns: 1fr 1fr 1fr;
+    padding: 5px 6px; background: #0f1117; border-bottom: 1px solid #1e2028;
+    font-size: 8px; color: #5a5e68; text-transform: uppercase;
+    position: sticky; top: 0; z-index: 3;
+    letter-spacing: 0.5px; font-weight: 700;
   }
-  .cluster-row:hover { background: rgba(42,46,57,0.6); }
-  .cluster-vol-sell { text-align: right; color: #ab47bc; font-weight: 700; font-size: 11px; padding-right: 2px; }
+  .ob-header span:nth-child(1) { text-align: right; }
+  .ob-header span:nth-child(2) { text-align: center; }
+  .ob-header span:nth-child(3) { text-align: left; }
+  .ob-row {
+    display: grid; grid-template-columns: 1fr 1fr 1fr;
+    align-items: center; height: 18px; padding: 0 6px; gap: 2px;
+    border-bottom: 1px solid rgba(30,32,40,0.5);
+    position: relative;
+  }
+  .ob-row.current {
+    background: rgba(255, 179, 0, 0.12);
+    border-top: 1px solid rgba(255, 179, 0, 0.4);
+    border-bottom: 1px solid rgba(255, 179, 0, 0.4);
+    height: 22px;
+  }
+  .ob-sell-vol { text-align: right; color: #ef5350; font-weight: 700; font-size: 10px; z-index: 1; }
+  .ob-sell-vol.zero { color: #3a3d47; }
+  .ob-price { text-align: center; font-weight: 700; font-size: 10px; z-index: 1; }
+  .ob-price.ask { color: #ef5350; }
+  .ob-price.bid { color: #26a69a; }
+  .ob-price.current { color: #ffb300; font-size: 11px; }
+  .ob-buy-vol { text-align: left; color: #26a69a; font-weight: 700; font-size: 10px; z-index: 1; }
+  .ob-buy-vol.zero { color: #3a3d47; }
+  .ob-bar-sell {
+    position: absolute; right: 66.6%; height: 12px;
+    background: linear-gradient(90deg, rgba(239,83,80,0.08) 0%, rgba(239,83,80,0.35) 100%);
+    border-radius: 2px 0 0 2px; top: 50%; transform: translateY(-50%); z-index: 0;
+  }
+  .ob-bar-buy {
+    position: absolute; left: 66.6%; height: 12px;
+    background: linear-gradient(90deg, rgba(38,166,154,0.35) 0%, rgba(38,166,154,0.08) 100%);
+    border-radius: 0 2px 2px 0; top: 50%; transform: translateY(-50%); z-index: 0;
+  }
+  .ob-summary {
+    position: sticky; bottom: 0;
+    background: #0f1117; border-top: 1px solid #1e2028;
+    padding: 6px 6px;
+    font-family: "Consolas", monospace; font-size: 9px;
+    z-index: 2;
+  }
+  .ob-summary-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 3px; }
+  .ob-summary-label { color: #5a5e68; font-size: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .ob-summary-value { font-weight: 700; font-size: 10px; }
+  .ob-summary-value.sell { color: #ef5350; }
+  .ob-summary-value.buy { color: #26a69a; }
+  .ob-summary-value.delta-buy { color: #26a69a; }
+  .ob-summary-value.delta-sell { color: #ef5350; }
+  .ob-summary-value.delta-neutral { color: #ffb300; }
+  .ob-summary-bar {
+    height: 5px; background: #1a1d26; border-radius: 2px;
+    overflow: hidden; display: flex; margin-top: 4px;
+  }
+  .ob-summary-bar-sell { background: #ef5350; }
+  .ob-summary-bar-buy { background: #26a69a; }
+
+  /* ─── VOLUME PROFILE ─── */
+  .vp-container {
+    display: flex; flex-direction: column;
+    height: 100%; font-family: "Consolas", monospace;
+    font-size: 9px; overflow-y: auto; background: #0a0b0f;
+  }
+  .vp-legend {
+    position: sticky; top: 0; background: #0f1117;
+    border-bottom: 1px solid #1e2028; padding: 4px 6px;
+    display: flex; justify-content: space-between;
+    font-size: 8px; color: #5a5e68; text-transform: uppercase;
+    z-index: 3; flex-shrink: 0; font-weight: 700;
+  }
+  .vp-legend .sell { color: #ef5350; }
+  .vp-legend .buy { color: #26a69a; }
+  .vp-row {
+    display: grid; grid-template-columns: 40px 1fr 42px;
+    align-items: center; height: 15px; padding: 0 4px; gap: 2px;
+    border-bottom: 1px solid rgba(30,32,40,0.25);
+    position: relative;
+  }
+  .vp-row:hover { background: rgba(30,32,40,0.4); }
+  .vp-row.in-va { background: rgba(41, 98, 255, 0.04); }
+  .vp-row.poc {
+    background: rgba(255, 179, 0, 0.12);
+    border-top: 1px solid rgba(255, 179, 0, 0.35);
+    border-bottom: 1px solid rgba(255, 179, 0, 0.35);
+    height: 18px;
+  }
+  .vp-price { text-align: center; font-weight: 700; font-size: 9px; color: #8a8e98; z-index: 1; }
+  .vp-price.poc { color: #ffb300; font-size: 10px; }
+  .vp-price.hvn { color: #26a69a; }
+  .vp-price.lvn { color: #ab47bc; }
+  .vp-bar-wrap { height: 11px; position: relative; display: flex; align-items: center; z-index: 1; }
+  .vp-bar-total {
+    position: absolute; height: 11px; background: rgba(120,120,120,0.08);
+    border-radius: 2px; top: 0; left: 0; z-index: 0;
+  }
+  .vp-bar-split { display: flex; width: 100%; height: 9px; position: relative; z-index: 1; }
+  .vp-bar-buy {
+    height: 9px; background: linear-gradient(90deg, #26a69a 0%, rgba(38,166,154,0.5) 100%);
+    border-radius: 2px 0 0 2px;
+  }
+  .vp-bar-sell {
+    height: 9px; background: linear-gradient(90deg, rgba(239,83,80,0.5) 0%, #ef5350 100%);
+    border-radius: 0 2px 2px 0;
+  }
+  .vp-vol { text-align: right; font-size: 8px; color: #5a5e68; font-weight: 600; z-index: 1; }
+  .vp-vol.poc { color: #ffb300; font-weight: 700; }
+  .vp-vol.hvn { color: #26a69a; font-weight: 700; }
+  .vp-vol.lvn { color: #ab47bc; }
+
+  /* ─── CLUSTER ─── */
+  .cluster-container { height: 100%; overflow-y: auto; overflow-x: hidden; font-family: "Consolas", monospace; font-size: 10px; padding: 2px 0; }
+  .cluster-row {
+    display: grid; grid-template-columns: 45px 1fr 65px 1fr 45px;
+    align-items: center; height: 22px; padding: 0 6px; gap: 4px;
+    border-bottom: 1px solid rgba(30,32,40,0.5);
+  }
+  .cluster-row:hover { background: rgba(30,32,40,0.5); }
+  .cluster-vol-sell { text-align: right; color: #ab47bc; font-weight: 700; font-size: 10px; padding-right: 2px; }
   .cluster-vol-sell.zero { color: #3a3d47; }
-  .cluster-vol-buy { text-align: left; color: #26a69a; font-weight: 700; font-size: 11px; padding-left: 2px; }
+  .cluster-vol-buy { text-align: left; color: #26a69a; font-weight: 700; font-size: 10px; padding-left: 2px; }
   .cluster-vol-buy.zero { color: #3a3d47; }
   .cluster-price {
-    text-align: center; color: #b2b5be; font-weight: 700; font-size: 11px;
-    background: rgba(42,46,57,0.4); padding: 2px 0; border-radius: 2px;
+    text-align: center; color: #b0b4be; font-weight: 700; font-size: 10px;
+    background: rgba(30,32,40,0.4); padding: 2px 0; border-radius: 2px;
   }
-  .cluster-bar-wrap { height: 16px; position: relative; display: flex; align-items: center; }
+  .cluster-bar-wrap { height: 14px; position: relative; display: flex; align-items: center; }
   .cluster-bar-wrap.sell { justify-content: flex-end; }
   .cluster-bar-wrap.buy { justify-content: flex-start; }
-  .cluster-bar { height: 14px; border-radius: 2px; transition: width 0.4s ease-out; min-width: 0; }
+  .cluster-bar { height: 12px; border-radius: 2px; min-width: 0; }
   .cluster-bar.sell { background: linear-gradient(90deg, rgba(171,71,188,0.15) 0%, #ab47bc 100%); }
-  .cluster-bar.sell.strong { background: linear-gradient(90deg, rgba(171,71,188,0.3) 0%, #c158dc 100%); box-shadow: 0 0 8px rgba(171,71,188,0.5); }
+  .cluster-bar.sell.strong { background: linear-gradient(90deg, rgba(171,71,188,0.3) 0%, #c158dc 100%); }
   .cluster-bar.buy { background: linear-gradient(90deg, #26a69a 0%, rgba(38,166,154,0.15) 100%); }
-  .cluster-bar.buy.strong { background: linear-gradient(90deg, #2ed4bf 0%, rgba(38,166,154,0.3) 100%); box-shadow: 0 0 8px rgba(38,166,154,0.5); }
-  @keyframes glowSell {
-    0% { box-shadow: 0 0 0 rgba(171,71,188,0); transform: scaleY(1); }
-    50% { box-shadow: 0 0 20px rgba(171,71,188,1), 0 0 40px rgba(171,71,188,0.6); transform: scaleY(1.3); }
-    100% { box-shadow: 0 0 0 rgba(171,71,188,0); transform: scaleY(1); }
-  }
-  @keyframes glowBuy {
-    0% { box-shadow: 0 0 0 rgba(38,166,154,0); transform: scaleY(1); }
-    50% { box-shadow: 0 0 20px rgba(38,166,154,1), 0 0 40px rgba(38,166,154,0.6); transform: scaleY(1.3); }
-    100% { box-shadow: 0 0 0 rgba(38,166,154,0); transform: scaleY(1); }
-  }
-  .cluster-bar.sell.flash { animation: glowSell 1.2s ease-out; }
-  .cluster-bar.buy.flash { animation: glowBuy 1.2s ease-out; }
+  .cluster-bar.buy.strong { background: linear-gradient(90deg, #2ed4bf 0%, rgba(38,166,154,0.3) 100%); }
   .cluster-legend {
-    display: flex; justify-content: space-between; height: 24px;
-    padding: 0 10px; background: #1e222d; border-top: 1px solid #2a2e39;
-    align-items: center; font-size: 10px; font-family: "Consolas", monospace; flex-shrink: 0;
+    display: flex; justify-content: space-between; height: 22px;
+    padding: 0 10px; background: #0f1117; border-top: 1px solid #1e2028;
+    align-items: center; font-size: 9px; font-family: "Consolas", monospace; flex-shrink: 0;
   }
   .legend-sell { color: #ab47bc; }
   .legend-buy { color: #26a69a; }
-  .level-table { width: 100%; border-collapse: collapse; font-size: 11px; font-family: "Consolas", monospace; }
-  .level-table th {
-    text-align: left; padding: 6px 10px; font-size: 9px;
-    color: #787b86; text-transform: uppercase;
-    background: #1e222d; border-bottom: 1px solid #2a2e39;
-    position: sticky; top: 0;
+
+  /* ─── FOOTPRINT ─── */
+  .fp-container { height: 100%; overflow-y: auto; font-family: "Consolas", monospace; font-size: 10px; background: #0a0b0f; padding: 4px; }
+  .fp-header {
+    display: grid; grid-template-columns: 1fr 1fr 1fr;
+    padding: 4px; background: #0f1117;
+    border-bottom: 1px solid #1e2028;
+    font-size: 8px; color: #5a5e68; text-transform: uppercase;
+    position: sticky; top: 0; z-index: 3; font-weight: 700;
   }
-  .level-table td { padding: 6px 10px; border-bottom: 1px solid #1e222d; color: #d1d4dc; }
-  .level-table tr:hover { background: #1e222d; }
-  .level-table .val-up { color: #26a69a; }
-  .level-table .val-down { color: #ef5350; }
-  .level-table .val-poc { color: #ffb300; }
-  .level-table .val-hvn { color: #26a69a; }
-  .level-table .val-lvn { color: #ab47bc; }
-  .level-table .val-neutral { color: #787b86; }
+  .fp-header span:nth-child(1) { text-align: right; }
+  .fp-header span:nth-child(2) { text-align: center; }
+  .fp-header span:nth-child(3) { text-align: left; }
+  .fp-row {
+    display: grid; grid-template-columns: 1fr 1fr 1fr;
+    align-items: center; height: 18px; padding: 0 4px;
+    border-bottom: 1px solid rgba(30,32,40,0.25);
+    position: relative;
+  }
+  .fp-row:hover { background: rgba(30,32,40,0.4); }
+  .fp-row.poc { background: rgba(255, 179, 0, 0.12); }
+  .fp-buy { text-align: right; color: #26a69a; font-weight: 700; font-size: 10px; z-index: 1; }
+  .fp-price { text-align: center; color: #b0b4be; font-weight: 700; font-size: 10px; z-index: 1; }
+  .fp-price.poc { color: #ffb300; }
+  .fp-sell { text-align: left; color: #ef5350; font-weight: 700; font-size: 10px; z-index: 1; }
+  .fp-bar-buy {
+    position: absolute; right: 66.6%; height: 10px;
+    background: rgba(38,166,154,0.35);
+    top: 50%; transform: translateY(-50%); z-index: 0;
+  }
+  .fp-bar-sell {
+    position: absolute; left: 66.6%; height: 10px;
+    background: rgba(239,83,80,0.35);
+    top: 50%; transform: translateY(-50%); z-index: 0;
+  }
+  .fp-summary {
+    position: sticky; bottom: 0;
+    background: #0f1117; border-top: 1px solid #1e2028;
+    padding: 6px; font-size: 9px;
+  }
+  .fp-summary-row { display: flex; justify-content: space-between; margin-bottom: 3px; }
+  .fp-summary-label { color: #5a5e68; font-size: 8px; text-transform: uppercase; }
+  .fp-summary-value { font-weight: 700; font-size: 10px; }
+  .fp-summary-value.buy { color: #26a69a; }
+  .fp-summary-value.sell { color: #ef5350; }
+  .fp-summary-value.delta-buy { color: #26a69a; }
+  .fp-summary-value.delta-sell { color: #ef5350; }
+
+  /* ─── ABSORPTION BUBBLES ─── */
+  .absorption-bubble {
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: "Consolas", monospace;
+    font-weight: 900;
+    color: #ffffff;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.9);
+    letter-spacing: 0.5px;
+  }
+  .absorption-bubble.buy {
+    background: rgba(0, 179, 134, 0.3);
+    border: 2px solid rgba(0, 229, 160, 0.85);
+  }
+  .absorption-bubble.sell {
+    background: rgba(229, 57, 53, 0.3);
+    border: 2px solid rgba(255, 82, 82, 0.85);
+  }
+  .absorption-bubble.size-small { width: 24px; height: 24px; font-size: 11px; }
+  .absorption-bubble.size-medium { width: 32px; height: 32px; font-size: 13px; }
+  .absorption-bubble.size-large { width: 40px; height: 40px; font-size: 15px; }
+  .absorption-bubble.size-xxl { width: 52px; height: 52px; font-size: 17px; }
+
+  /* ─── STATUS BAR ─── */
   .statusbar {
-    height: 24px; background: #1e222d; border-top: 1px solid #2a2e39;
-    display: flex; align-items: center; padding: 0 12px; gap: 20px;
-    font-size: 10px; font-family: "Consolas", monospace; color: #787b86;
+    height: 22px; background: #0f1117; border-top: 1px solid #1e2028;
+    display: flex; align-items: center; padding: 0 12px; gap: 18px;
+    font-size: 9px; font-family: "Consolas", monospace; color: #5a5e68;
     flex-shrink: 0;
   }
   .statusbar-item { display: flex; gap: 5px; align-items: center; }
-  .statusbar-value { color: #d1d4dc; }
+  .statusbar-value { color: #b0b4be; }
+
+  /* ─── MODAL ─── */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0, 0, 0, 0.75);
+    z-index: 9999;
+    align-items: center;
+    justify-content: center;
+  }
+  .modal-overlay.show { display: flex; }
+  .modal {
+    background: #161920;
+    border: 1px solid #2a2d38;
+    border-radius: 8px;
+    min-width: 480px;
+    max-width: 600px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+    overflow: hidden;
+  }
+  .modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 18px;
+    background: #0f1117;
+    border-bottom: 1px solid #1e2028;
+  }
+  .modal-title {
+    font-size: 13px; font-weight: 700; color: #fff;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .modal-close {
+    background: transparent; border: none; color: #6a6e78;
+    font-size: 18px; cursor: pointer; padding: 0 4px;
+    font-family: "Consolas", monospace;
+  }
+  .modal-close:hover { color: #fff; }
+  .modal-body {
+    padding: 18px;
+    max-height: 400px;
+    overflow-y: auto;
+  }
+  .modal-section {
+    margin-bottom: 16px;
+  }
+  .modal-section-title {
+    font-size: 10px; color: #5a5e68;
+    text-transform: uppercase; letter-spacing: 1px;
+    font-weight: 700; margin-bottom: 8px;
+  }
+  .template-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 14px;
+    background: #0f1117;
+    border: 1px solid #1e2028;
+    border-radius: 6px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .template-item:hover {
+    background: #1a1d26;
+    border-color: #4a9eff;
+  }
+  .template-icon {
+    width: 36px; height: 36px;
+    background: linear-gradient(135deg, #4a9eff 0%, #2962ff 100%);
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; font-weight: 800; color: #fff;
+  }
+  .template-info { flex: 1; }
+  .template-name {
+    font-size: 12px; font-weight: 700; color: #fff;
+    margin-bottom: 2px;
+  }
+  .template-desc {
+    font-size: 10px; color: #6a6e78;
+  }
+  .template-badge {
+    font-size: 9px; color: #26a69a;
+    padding: 2px 6px;
+    background: rgba(38,166,154,0.15);
+    border-radius: 3px;
+    font-weight: 700;
+  }
+  .modal-footer {
+    display: flex; justify-content: flex-end; gap: 8px;
+    padding: 12px 18px;
+    background: #0f1117;
+    border-top: 1px solid #1e2028;
+  }
+  .modal-btn {
+    padding: 8px 16px;
+    font-size: 11px; font-weight: 700;
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: "Segoe UI", sans-serif;
+    transition: all 0.15s;
+  }
+  .modal-btn.cancel {
+    background: #1a1d26; color: #b0b4be;
+    border: 1px solid #2a2d38;
+  }
+  .modal-btn.cancel:hover { background: #22262f; }
+  .modal-btn.confirm {
+    background: #4a9eff; color: #fff;
+    border: 1px solid #4a9eff;
+  }
+  .modal-btn.confirm:hover { background: #6ab0ff; }
+
+  /* ─── CONTEXT MENU ─── */
+  .context-menu {
+    display: none;
+    position: fixed;
+    background: #161920;
+    border: 1px solid #2a2d38;
+    border-radius: 6px;
+    padding: 4px;
+    min-width: 180px;
+    z-index: 10000;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.7);
+  }
+  .context-menu.show { display: block; }
+  .context-item {
+    padding: 8px 12px;
+    font-size: 11px;
+    color: #b0b4be;
+    cursor: pointer;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: "Segoe UI", sans-serif;
+  }
+  .context-item:hover { background: #22262f; color: #fff; }
+  .context-item.danger { color: #ef5350; }
+  .context-item.danger:hover { background: #2a1a1a; }
+  .context-sep {
+    height: 1px;
+    background: #1e2028;
+    margin: 4px 0;
+  }
+
+  /* ─── NOTIFICATION ─── */
+  .notif {
+    position: fixed;
+    bottom: 40px; right: 20px;
+    background: #161920;
+    border: 1px solid #2a2d38;
+    border-left: 3px solid #26a69a;
+    border-radius: 6px;
+    padding: 12px 16px;
+    font-size: 11px;
+    color: #fff;
+    z-index: 10001;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+    transform: translateX(400px);
+    transition: transform 0.3s;
+  }
+  .notif.show { transform: translateX(0); }
+  .notif.error { border-left-color: #ef5350; }
+  .notif.info { border-left-color: #4a9eff; }
 </style>
 </head>
 <body>
 
 <div class="app">
 
-  <div class="topbar">
+  <!-- MENU BAR -->
+  <div class="menubar">
+    <div class="menu-item" onclick="openTemplateModal()">File</div>
+    <div class="menu-item">Account</div>
+    <div class="menu-item">Help</div>
+    <div class="menu-sep"></div>
+    <div class="menu-item" onclick="openTemplateModal()">New Window</div>
+    <div class="menu-item" onclick="openTemplateModal()">Templates</div>
+    <div class="menu-sep"></div>
+    <div class="menu-item" onclick="showNotif('Chart saved', 'success')">Save Chart</div>
+    <div class="menu-spacer"></div>
+    <div class="menu-title" id="menuTitle">GEX Order Flow · Live Trading Terminal</div>
+    <div class="menu-spacer"></div>
+    <div class="menu-item">Data · XAUUSD</div>
+  </div>
+
+  <!-- TOOLBAR -->
+  <div class="toolbar">
     <div class="brand">
       <div class="brand-logo">GEX ORDER FLOW</div>
       <div class="brand-tag">LIVE</div>
     </div>
-    <button class="tf-btn" data-tf="1m">1m</button>
-    <button class="tf-btn" data-tf="5m">5m</button>
-    <button class="tf-btn" data-tf="15m">15m</button>
-    <button class="tf-btn" data-tf="30m">30m</button>
-    <button class="tf-btn active" data-tf="1h">1H</button>
-    <button class="tf-btn" data-tf="4h">4H</button>
-    <button class="tf-btn" data-tf="1d">1D</button>
-    <div class="tb-sep"></div>
-    <button class="tb-btn warn" id="resetZoom">⟲ RESET</button>
-    <div class="timer-badge" id="timerBadge">
-      <span class="timer-label">CLOSE IN</span>
-      <span class="timer-value" id="timerValue">--:--</span>
+
+    <!-- TIMEFRAME DROPDOWN -->
+    <div class="tf-dropdown">
+      <button class="tf-dropdown-btn" id="tfDropdownBtn" onclick="toggleTFDropdown()">
+        <span id="tfLabel">1H</span>
+      </button>
+      <div class="tf-dropdown-menu" id="tfDropdownMenu">
+        <div class="tf-dropdown-item" data-tf="1m">1m</div>
+        <div class="tf-dropdown-item" data-tf="5m">5m</div>
+        <div class="tf-dropdown-item" data-tf="15m">15m</div>
+        <div class="tf-dropdown-item" data-tf="30m">30m</div>
+        <div class="tf-dropdown-item active" data-tf="1h">1H</div>
+        <div class="tf-dropdown-item" data-tf="4h">4H</div>
+        <div class="tf-dropdown-item" data-tf="1d">1D</div>
+      </div>
     </div>
+
+    <div class="tb-sep"></div>
+    <button class="tb-btn warn" id="resetZoom">RESET</button>
+    <button class="tb-btn opt-on" id="bubblesToggle">BUBBLES: ON</button>
+    <button class="tb-btn" id="footprintToggle">FOOTPRINT: OFF</button>
+    <button class="tb-btn primary" id="newWindowBtn" onclick="openTemplateModal()">+ NEW WINDOW</button>
+
     <div class="tb-spacer"></div>
     <div class="symbol-info">
       <span class="symbol-name">XAUUSD</span>
@@ -185,20 +614,74 @@
     </div>
   </div>
 
-  <div class="main">
-    <div class="left-col">
-      <div class="panel" style="flex: 1;">
-        <div class="panel-header">
-          <span class="panel-title">XAUUSD · <span id="current-tf">1H</span></span>
-          <span class="panel-badge">CANDLESTICK · TV CHART</span>
+  <!-- MAIN LAYOUT -->
+  <div class="main" id="mainLayout">
+
+    <!-- COLUMN 1: Order Book -->
+    <div class="col" data-col="1">
+      <div class="panel" data-panel="orderbook">
+        <div class="panel-header" draggable="true">
+          <span class="panel-title">Order Book</span>
+          <span class="panel-badge" id="ob-type">—</span>
         </div>
-        <div class="panel-body" id="candleChartWrap"></div>
+        <div class="panel-body" style="overflow: hidden;">
+          <div class="ob-container" id="obContainer">
+            <div style="color:#5a5e68;padding:20px;text-align:center;font-size:10px;">Waiting...</div>
+          </div>
+        </div>
       </div>
     </div>
 
-    <div class="right-col">
-      <div class="panel" style="flex: 2;">
-        <div class="panel-header">
+    <!-- COLUMN 2: Volume Profile -->
+    <div class="col" data-col="2">
+      <div class="panel" data-panel="volprofile">
+        <div class="panel-header" draggable="true">
+          <span class="panel-title">Vol Profile</span>
+          <span class="panel-badge" id="vp-badge">POC</span>
+        </div>
+        <div class="panel-body" style="overflow-y: auto;">
+          <div class="vp-container" id="vpContainer">
+            <div style="color:#5a5e68;padding:20px;text-align:center;font-size:10px;">Waiting...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- COLUMN 3: Chart + Delta -->
+    <div class="col" data-col="3">
+      <div class="panel" data-panel="chart" style="flex: 2;">
+        <div class="panel-header" draggable="true">
+          <span class="panel-title">XAUUSD · <span id="current-tf">1H</span> · Candles</span>
+          <span class="panel-badge">ABSORPTION + FOOTPRINT</span>
+        </div>
+        <div class="panel-body" id="candleChartWrap" style="position: relative;"></div>
+      </div>
+
+      <div class="panel" data-panel="cvd" style="flex: 1;">
+        <div class="panel-header" draggable="true">
+          <span class="panel-title">Delta & CVD</span>
+          <span class="panel-badge" id="cvd-badge">—</span>
+        </div>
+        <div class="panel-body" id="deltaChartWrap"></div>
+      </div>
+    </div>
+
+    <!-- COLUMN 4: Footprint + Cluster -->
+    <div class="col" data-col="4">
+      <div class="panel" data-panel="footprint" style="flex: 1;">
+        <div class="panel-header" draggable="true">
+          <span class="panel-title">Footprint (Last Candle)</span>
+          <span class="panel-badge" id="fp-badge">—</span>
+        </div>
+        <div class="panel-body">
+          <div class="fp-container" id="fpContainer">
+            <div style="color:#5a5e68;padding:20px;text-align:center;font-size:10px;">Waiting...</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel" data-panel="cluster" style="flex: 1;">
+        <div class="panel-header" draggable="true">
           <span class="panel-title">Cluster Footprint</span>
           <span class="panel-badge">HIGH → LOW</span>
         </div>
@@ -206,42 +689,15 @@
           <div class="cluster-container" id="clusterContainer"></div>
         </div>
         <div class="cluster-legend">
-          <span class="legend-sell">◀ AGGRESSOR SELL</span>
-          <span class="legend-buy">AGGRESSOR BUY ▶</span>
-        </div>
-      </div>
-
-      <div class="panel" style="flex: 1;">
-        <div class="panel-header">
-          <span class="panel-title">Volume Profile</span>
-          <span class="panel-badge">POC · HVN · LVN</span>
-        </div>
-        <div class="panel-body" id="vpChartWrap"></div>
-      </div>
-
-      <div class="panel" style="flex: 1;">
-        <div class="panel-header">
-          <span class="panel-title">Key Levels</span>
-          <span class="panel-badge" id="levels-badge">LIVE</span>
-        </div>
-        <div class="panel-body" style="overflow-y: auto;">
-          <table class="level-table">
-            <thead>
-              <tr><th>LEVEL</th><th>PRICE</th><th>DIST</th></tr>
-            </thead>
-            <tbody>
-              <tr><td>Current</td><td id="lvl-current" class="val-neutral">—</td><td class="val-neutral">—</td></tr>
-              <tr><td>POC</td><td class="val-poc" id="lvl-poc">—</td><td id="lvl-poc-dist">—</td></tr>
-              <tr><td>Nearest HVN</td><td class="val-hvn" id="lvl-hvn">—</td><td id="lvl-hvn-dist">—</td></tr>
-              <tr><td>Nearest LVN</td><td class="val-lvn" id="lvl-lvn">—</td><td id="lvl-lvn-dist">—</td></tr>
-              <tr><td>Zone</td><td id="lvl-zone">—</td><td class="val-neutral">—</td></tr>
-            </tbody>
-          </table>
+          <span class="legend-sell">SELL</span>
+          <span class="legend-buy">BUY</span>
         </div>
       </div>
     </div>
+
   </div>
 
+  <!-- STATUS BAR -->
   <div class="statusbar">
     <div class="statusbar-item">
       <span>●</span>
@@ -252,17 +708,100 @@
     <div class="statusbar-item"><span>ASK:</span><span class="statusbar-value" id="status-ask">—</span></div>
     <div class="statusbar-item"><span>SPREAD:</span><span class="statusbar-value" id="status-spread">—</span></div>
     <div style="flex:1;"></div>
-    <div class="statusbar-item">GEX Order Flow v1.0</div>
+    <div class="statusbar-item">GEX Order Flow v10.0</div>
   </div>
 
 </div>
 
+<!-- ═══ TEMPLATE MODAL ═══ -->
+<div class="modal-overlay" id="templateModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">New Window · Select Template</div>
+      <button class="modal-close" onclick="closeTemplateModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-section">
+        <div class="modal-section-title">Starter Templates</div>
+
+        <div class="template-item" onclick="loadTemplate('default')">
+          <div class="template-icon">D</div>
+          <div class="template-info">
+            <div class="template-name">Default Trading Layout</div>
+            <div class="template-desc">Order Book · Volume Profile · Chart · Footprint · Cluster</div>
+          </div>
+          <div class="template-badge">STARTER</div>
+        </div>
+
+        <div class="template-item" onclick="loadTemplate('scalper')">
+          <div class="template-icon">S</div>
+          <div class="template-info">
+            <div class="template-name">Scalper Layout</div>
+            <div class="template-desc">Chart dominant · Delta · Footprint · Quick Order Book</div>
+          </div>
+          <div class="template-badge">FAST</div>
+        </div>
+
+        <div class="template-item" onclick="loadTemplate('swing')">
+          <div class="template-icon">W</div>
+          <div class="template-info">
+            <div class="template-name">Swing Layout</div>
+            <div class="template-desc">Wide chart · Volume Profile · CVD · Cluster</div>
+          </div>
+          <div class="template-badge">WIDE</div>
+        </div>
+
+        <div class="template-item" onclick="loadTemplate('orderflow')">
+          <div class="template-icon">O</div>
+          <div class="template-info">
+            <div class="template-name">Order Flow Pro</div>
+            <div class="template-desc">All panels · Absorption focus · Footprint detail</div>
+          </div>
+          <div class="template-badge">PRO</div>
+        </div>
+      </div>
+
+      <div class="modal-section">
+        <div class="modal-section-title">Custom Templates</div>
+        <div style="color:#5a5e68;font-size:11px;padding:12px;text-align:center;background:#0f1117;border-radius:6px;border:1px dashed #2a2d38;">
+          No custom templates yet · Save current layout to create one
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="modal-btn cancel" onclick="closeTemplateModal()">Cancel</button>
+      <button class="modal-btn confirm" onclick="confirmLoadTemplate()">Confirm & Load</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ CONTEXT MENU ═══ -->
+<div class="context-menu" id="contextMenu">
+  <div class="context-item" onclick="contextAction('add-indicator')">+ Add Indicator</div>
+  <div class="context-item" onclick="contextAction('add-chart')">+ Add Chart</div>
+  <div class="context-sep"></div>
+  <div class="context-item" onclick="contextAction('settings')">Settings</div>
+  <div class="context-item" onclick="contextAction('duplicate')">Duplicate Panel</div>
+  <div class="context-sep"></div>
+  <div class="context-item danger" onclick="contextAction('remove')">Remove Panel</div>
+</div>
+
+<!-- ═══ NOTIFICATION ═══ -->
+<div class="notif" id="notif"></div>
+
 <script>
 let currentTF = "1h";
 let candleChart = null, candleSeries = null;
-let vpChart = null, vpSeries = null;
-let prevClusterMap = {};
+let deltaChart = null, deltaSeries = null, cvdSeries = null;
 let lastPrice = null;
+let lastCandleTime = 0;
+let lastData = [];
+let lastAbsorptions = [];
+let lastFootprint = {};
+let bubblesVisible = true;
+let footprintVisible = false;
+let pendingTemplate = null;
+let contextPanel = null;
 
 const TF_SECONDS = {
   "1m": 60, "5m": 300, "15m": 900, "30m": 1800,
@@ -270,22 +809,30 @@ const TF_SECONDS = {
 };
 
 const tvTheme = {
-  layout: { background: { color: '#131722' }, textColor: '#d1d4dc', fontSize: 10, fontFamily: 'Consolas, monospace' },
-  grid: { vertLines: { color: '#1e222d' }, horzLines: { color: '#1e222d' } },
+  layout: { background: { color: '#0a0b0f' }, textColor: '#b0b4be', fontSize: 10, fontFamily: 'Consolas, monospace' },
+  grid: { vertLines: { color: '#0f1117' }, horzLines: { color: '#0f1117' } },
   crosshair: {
     mode: 0,
-    vertLine: { color: '#758696', width: 1, style: 3, labelBackgroundColor: '#2962ff' },
-    horzLine: { color: '#758696', width: 1, style: 3, labelBackgroundColor: '#2962ff' },
+    vertLine: { color: '#5a5e68', width: 1, style: 3, labelBackgroundColor: '#4a9eff' },
+    horzLine: { color: '#5a5e68', width: 1, style: 3, labelBackgroundColor: '#4a9eff' },
   },
-  rightPriceScale: { borderColor: '#2a2e39', scaleMargins: { top: 0.1, bottom: 0.1 } },
-  timeScale: { borderColor: '#2a2e39', timeVisible: true, secondsVisible: false, rightOffset: 5, barSpacing: 6 },
+  rightPriceScale: { borderColor: '#1e2028', scaleMargins: { top: 0.1, bottom: 0.1 }, autoScale: true },
+  timeScale: {
+    borderColor: '#1e2028', timeVisible: true, secondsVisible: false,
+    rightOffset: 5, barSpacing: 6,
+    shiftVisibleRangeOnNewBar: false,
+    lockVisibleTimeRangeOnResize: true,
+    rightBarStaysOnScroll: true,
+  },
   handleScroll: { mouseWheel: true, pressedMouseMove: true, horzTouchDrag: true, vertTouchDrag: false },
   handleScale: { axisPressedMouseMove: true, mouseWheel: true, pinch: true },
 };
 
+// ═══ CHART INIT ═══
 function initCandleChart() {
   const container = document.getElementById('candleChartWrap');
   container.innerHTML = '';
+  
   candleChart = LightweightCharts.createChart(container, {
     ...tvTheme, width: container.clientWidth, height: container.clientHeight,
   });
@@ -296,28 +843,388 @@ function initCandleChart() {
     priceLineVisible: true, priceLineColor: '#ffb300',
     priceLineStyle: 2, lastValueVisible: true,
   });
+
   new ResizeObserver(() => {
-    if (candleChart) candleChart.applyOptions({ width: container.clientWidth, height: container.clientHeight });
+    if (candleChart) {
+      candleChart.applyOptions({ width: container.clientWidth, height: container.clientHeight });
+      updateBubblePositions();
+    }
   }).observe(container);
+
+  candleChart.timeScale().subscribeVisibleTimeRangeChange(() => {
+    updateBubblePositions();
+  });
 }
 
-function initVPChart() {
-  const container = document.getElementById('vpChartWrap');
+function initDeltaChart() {
+  const container = document.getElementById('deltaChartWrap');
   container.innerHTML = '';
-  vpChart = LightweightCharts.createChart(container, {
-    ...tvTheme, width: container.clientWidth, height: container.clientHeight,
-    rightPriceScale: { borderColor: '#2a2e39', scaleMargins: { top: 0.05, bottom: 0.05 } },
+  deltaChart = LightweightCharts.createChart(container, {
+    ...tvTheme,
+    width: container.clientWidth,
+    height: container.clientHeight,
+    rightPriceScale: { borderColor: '#1e2028', scaleMargins: { top: 0.1, bottom: 0.1 } },
   });
-  vpSeries = vpChart.addHistogramSeries({ priceFormat: { type: 'volume' }, priceScaleId: 'right' });
+
+  deltaSeries = deltaChart.addHistogramSeries({
+    priceFormat: { type: 'volume' },
+    priceScaleId: 'right',
+    priceLineVisible: false,
+    lastValueVisible: false,
+  });
+
+  cvdSeries = deltaChart.addLineSeries({
+    color: '#ffb300',
+    lineWidth: 2,
+    priceScaleId: 'right',
+    priceLineVisible: false,
+    lastValueVisible: true,
+    crosshairMarkerVisible: false,
+  });
+
   new ResizeObserver(() => {
-    if (vpChart) vpChart.applyOptions({ width: container.clientWidth, height: container.clientHeight });
+    if (deltaChart) deltaChart.applyOptions({ width: container.clientWidth, height: container.clientHeight });
   }).observe(container);
+
+  candleChart.timeScale().subscribeVisibleLogicalRangeChange((range) => {
+    if (range && deltaChart) {
+      deltaChart.timeScale().setVisibleLogicalRange(range);
+    }
+  });
+}
+
+// ═══ TIMEFRAME DROPDOWN ═══
+function toggleTFDropdown() {
+  const menu = document.getElementById('tfDropdownMenu');
+  menu.classList.toggle('show');
+}
+
+document.querySelectorAll('.tf-dropdown-item').forEach(item => {
+  item.addEventListener('click', () => {
+    const tf = item.dataset.tf;
+    currentTF = tf;
+    
+    document.querySelectorAll('.tf-dropdown-item').forEach(i => i.classList.remove('active'));
+    item.classList.add('active');
+    
+    document.getElementById('tfLabel').textContent = tf.toUpperCase();
+    document.getElementById('current-tf').textContent = tf.toUpperCase();
+    
+    document.getElementById('tfDropdownMenu').classList.remove('show');
+    
+    lastData = [];
+    fetchCandles(currentTF);
+    fetchDelta(currentTF);
+    fetchFootprint(currentTF);
+    
+    showNotif('Timeframe changed to ' + tf.toUpperCase(), 'info');
+  });
+});
+
+// Close dropdown on outside click
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.tf-dropdown')) {
+    document.getElementById('tfDropdownMenu').classList.remove('show');
+  }
+});
+
+// ═══ TEMPLATE MODAL ═══
+function openTemplateModal() {
+  document.getElementById('templateModal').classList.add('show');
+  pendingTemplate = null;
+}
+
+function closeTemplateModal() {
+  document.getElementById('templateModal').classList.remove('show');
+  pendingTemplate = null;
+}
+
+function loadTemplate(templateName) {
+  pendingTemplate = templateName;
+  document.querySelectorAll('.template-item').forEach(t => t.style.borderColor = '#1e2028');
+  event.currentTarget.style.borderColor = '#4a9eff';
+}
+
+function confirmLoadTemplate() {
+  if (!pendingTemplate) {
+    showNotif('Please select a template first', 'error');
+    return;
+  }
+
+  showNotif('Loading template: ' + pendingTemplate, 'info');
+  
+  setTimeout(() => {
+    applyTemplate(pendingTemplate);
+    closeTemplateModal();
+    showNotif('Template loaded successfully', 'success');
+  }, 600);
+}
+
+function applyTemplate(name) {
+  const layout = document.getElementById('mainLayout');
+  
+  if (name === 'scalper') {
+    layout.style.gridTemplateColumns = '160px 0px 1fr 340px';
+  } else if (name === 'swing') {
+    layout.style.gridTemplateColumns = '180px 240px 1fr 300px';
+  } else if (name === 'orderflow') {
+    layout.style.gridTemplateColumns = '220px 220px 1fr 400px';
+  } else {
+    layout.style.gridTemplateColumns = '200px 200px 1fr 360px';
+  }
+
+  setTimeout(() => {
+    if (candleChart) candleChart.applyOptions({ width: document.getElementById('candleChartWrap').clientWidth, height: document.getElementById('candleChartWrap').clientHeight });
+    if (deltaChart) deltaChart.applyOptions({ width: document.getElementById('deltaChartWrap').clientWidth, height: document.getElementById('deltaChartWrap').clientHeight });
+  }, 100);
+}
+
+// ═══ CONTEXT MENU ═══
+document.querySelectorAll('.panel-header').forEach(header => {
+  header.addEventListener('contextmenu', (e) => {
+    e.preventDefault();
+    contextPanel = e.currentTarget.closest('.panel');
+    const menu = document.getElementById('contextMenu');
+    menu.style.left = e.clientX + 'px';
+    menu.style.top = e.clientY + 'px';
+    menu.classList.add('show');
+  });
+});
+
+document.addEventListener('click', () => {
+  document.getElementById('contextMenu').classList.remove('show');
+});
+
+function contextAction(action) {
+  if (!contextPanel) return;
+
+  if (action === 'remove') {
+    contextPanel.style.display = 'none';
+    showNotif('Panel removed. Refresh to restore.', 'info');
+  } else if (action === 'settings') {
+    showNotif('Settings panel coming soon', 'info');
+  } else if (action === 'duplicate') {
+    showNotif('Duplicate feature coming soon', 'info');
+  } else if (action === 'add-indicator') {
+    showNotif('Search indicator... (feature coming soon)', 'info');
+  } else if (action === 'add-chart') {
+    showNotif('Add chart... (feature coming soon)', 'info');
+  }
+
+  document.getElementById('contextMenu').classList.remove('show');
+}
+
+// ═══ NOTIFICATIONS ═══
+function showNotif(msg, type = 'success') {
+  const notif = document.getElementById('notif');
+  notif.textContent = msg;
+  notif.className = 'notif ' + type;
+  notif.classList.add('show');
+  
+  setTimeout(() => {
+    notif.classList.remove('show');
+  }, 3000);
+}
+
+// ═══ DRAG & DROP (Panel reorder) ═══
+let draggedPanel = null;
+
+document.querySelectorAll('.panel-header').forEach(header => {
+  header.addEventListener('dragstart', (e) => {
+    draggedPanel = e.target.closest('.panel');
+    draggedPanel.classList.add('dragging');
+  });
+
+  header.addEventListener('dragend', (e) => {
+    if (draggedPanel) draggedPanel.classList.remove('dragging');
+    draggedPanel = null;
+  });
+});
+
+document.querySelectorAll('.panel').forEach(panel => {
+  panel.addEventListener('dragover', (e) => {
+    e.preventDefault();
+  });
+
+  panel.addEventListener('drop', (e) => {
+    e.preventDefault();
+    if (!draggedPanel || draggedPanel === panel) return;
+    
+    const parent1 = draggedPanel.parentNode;
+    const parent2 = panel.parentNode;
+    
+    if (parent1 === parent2) {
+      const next = panel.nextSibling === draggedPanel ? panel.nextSibling : panel;
+      parent1.insertBefore(draggedPanel, next);
+      showNotif('Panel repositioned', 'success');
+    }
+  });
+});
+
+// ═══ ABSORPTION BUBBLES ═══
+function renderAbsorptions(absorptions) {
+  document.querySelectorAll('.absorption-bubble').forEach(el => el.remove());
+
+  if (!bubblesVisible) return;
+  if (!absorptions || absorptions.length === 0) return;
+  if (!candleSeries || !candleChart) return;
+
+  const container = document.getElementById('candleChartWrap');
+
+  absorptions.forEach(abs => {
+    const timeVal = Math.floor(new Date(abs.time).getTime() / 1000);
+    const x = candleChart.timeScale().timeToCoordinate(timeVal);
+    if (x === null || x === undefined) return;
+
+    const y = candleSeries.priceToCoordinate(abs.price);
+    if (y === null || y === undefined) return;
+
+    let sizeClass = 'size-small';
+    let sizePx = 24;
+    if (abs.score >= 8) { sizeClass = 'size-xxl'; sizePx = 52; }
+    else if (abs.score >= 6.5) { sizeClass = 'size-large'; sizePx = 40; }
+    else if (abs.score >= 5) { sizeClass = 'size-medium'; sizePx = 32; }
+
+    const bubble = document.createElement('div');
+    bubble.className = `absorption-bubble ${abs.side} ${sizeClass}`;
+    bubble.style.left = (x - sizePx / 2) + 'px';
+    bubble.style.top = (y - sizePx / 2) + 'px';
+    bubble.textContent = Math.round(abs.score);
+    bubble.title = `${abs.side.toUpperCase()} Absorption\nScore: ${abs.score}/10`;
+    
+    container.appendChild(bubble);
+  });
+}
+
+function updateBubblePositions() {
+  if (lastAbsorptions.length === 0) return;
+  renderAbsorptions(lastAbsorptions);
+}
+
+// ═══ FOOTPRINT RENDER ═══
+function renderFootprint(footprint) {
+  const container = document.getElementById('fpContainer');
+  if (!footprintVisible) {
+    container.innerHTML = '<div style="color:#5a5e68;padding:20px;text-align:center;font-size:10px;">Footprint OFF</div>';
+    return;
+  }
+
+  if (!footprint || Object.keys(footprint).length === 0) {
+    container.innerHTML = '<div style="color:#5a5e68;padding:20px;text-align:center;font-size:10px;">Waiting...</div>';
+    return;
+  }
+
+  const times = Object.keys(footprint).sort();
+  if (times.length === 0) return;
+
+  const lastTime = times[times.length - 1];
+  const fp = footprint[lastTime];
+
+  if (!fp || !fp.levels || fp.levels.length === 0) return;
+
+  const maxVol = Math.max(...fp.levels.map(l => l.total), 1);
+  const maxSide = Math.max(
+    Math.max(...fp.levels.map(l => l.buy)),
+    Math.max(...fp.levels.map(l => l.sell)),
+    1
+  );
+
+  let html = `<div class="fp-header"><span>BUY</span><span>PRICE</span><span>SELL</span></div>`;
+
+  fp.levels.forEach((lvl, i) => {
+    const buyBarPct = (lvl.buy / maxSide) * 33;
+    const sellBarPct = (lvl.sell / maxSide) * 33;
+    const isPoc = lvl.total >= maxVol * 0.85;
+
+    html += `
+      <div class="fp-row ${isPoc ? 'poc' : ''}">
+        <div class="fp-bar-buy" style="width: ${buyBarPct}%;"></div>
+        <div class="fp-bar-sell" style="width: ${sellBarPct}%;"></div>
+        <div class="fp-buy">${Math.round(lvl.buy)}</div>
+        <div class="fp-price ${isPoc ? 'poc' : ''}">${lvl.price.toFixed(2)}</div>
+        <div class="fp-sell">${Math.round(lvl.sell)}</div>
+      </div>
+    `;
+  });
+
+  const deltaClass = fp.delta >= 0 ? 'delta-buy' : 'delta-sell';
+  html += `
+    <div class="fp-summary">
+      <div class="fp-summary-row">
+        <span class="fp-summary-label">TOTAL BUY</span>
+        <span class="fp-summary-value buy">${Math.round(fp.total_buy)}</span>
+      </div>
+      <div class="fp-summary-row">
+        <span class="fp-summary-label">TOTAL SELL</span>
+        <span class="fp-summary-value sell">${Math.round(fp.total_sell)}</span>
+      </div>
+      <div class="fp-summary-row">
+        <span class="fp-summary-label">DELTA</span>
+        <span class="fp-summary-value ${deltaClass}">${fp.delta >= 0 ? '+' : ''}${Math.round(fp.delta)}</span>
+      </div>
+    </div>
+  `;
+
+  container.innerHTML = html;
+
+  const badge = document.getElementById('fp-badge');
+  badge.textContent = `${lastTime.substring(11, 16)} · ${Math.round(fp.delta)}`;
+  badge.style.color = fp.delta >= 0 ? '#26a69a' : '#ef5350';
+}
+
+function renderVP(profile, vah, val) {
+  const container = document.getElementById('vpContainer');
+  if (!profile || profile.length === 0) {
+    container.innerHTML = '<div style="color:#5a5e68;padding:20px;text-align:center;font-size:10px;">Waiting...</div>';
+    return;
+  }
+
+  const sorted = [...profile].sort((a, b) => b.price - a.price);
+  const maxVol = Math.max(...sorted.map(p => p.volume), 1);
+
+  let html = `<div class="vp-legend"><span class="sell">S</span><span>V.P.</span><span class="buy">B</span></div>`;
+
+  sorted.forEach(p => {
+    const totalBarPct = (p.volume / maxVol) * 100;
+    const buyPct = p.volume > 0 ? (p.buy / p.volume) * 100 : 50;
+    const sellPct = p.volume > 0 ? (p.sell / p.volume) * 100 : 50;
+
+    let rowClass = 'vp-row';
+    if (p.type === 'poc') rowClass += ' poc';
+    else if (p.in_va) rowClass += ' in-va';
+
+    let priceClass = 'vp-price';
+    if (p.type === 'poc') priceClass += ' poc';
+    else if (p.type === 'hvn') priceClass += ' hvn';
+    else if (p.type === 'lvn') priceClass += ' lvn';
+
+    let volClass = 'vp-vol';
+    if (p.type === 'poc') volClass += ' poc';
+    else if (p.type === 'hvn') volClass += ' hvn';
+    else if (p.type === 'lvn') volClass += ' lvn';
+
+    html += `
+      <div class="${rowClass}">
+        <div class="${priceClass}">${p.price.toFixed(2)}</div>
+        <div class="vp-bar-wrap">
+          <div class="vp-bar-total" style="width: ${totalBarPct}%;"></div>
+          <div class="vp-bar-split" style="width: ${totalBarPct}%;">
+            <div class="vp-bar-buy" style="width: ${buyPct}%;"></div>
+            <div class="vp-bar-sell" style="width: ${sellPct}%;"></div>
+          </div>
+        </div>
+        <div class="${volClass}">${Math.round(p.volume / 1000)}k</div>
+      </div>
+    `;
+  });
+
+  container.innerHTML = html;
 }
 
 function renderCluster(clusters) {
   const container = document.getElementById('clusterContainer');
   if (!clusters || clusters.length === 0) {
-    container.innerHTML = '<div style="color:#787b86;padding:20px;text-align:center;">Waiting for data...</div>';
+    container.innerHTML = '<div style="color:#5a5e68;padding:20px;text-align:center;">Waiting for data...</div>';
     return;
   }
   const sorted = [...clusters].sort((a, b) => b.price_mid - a.price_mid);
@@ -330,35 +1237,95 @@ function renderCluster(clusters) {
     const buyPct = (c.buy_vol / maxBuy) * 100;
     const sellStrong = c.dominance === 'sell' ? 'strong' : '';
     const buyStrong = c.dominance === 'buy' ? 'strong' : '';
-    const key = c.price_mid.toFixed(2);
-    const prev = prevClusterMap[key];
-    const buyChanged = !prev || Math.abs((prev.buy || 0) - c.buy_vol) > 0.5;
-    const sellChanged = !prev || Math.abs((prev.sell || 0) - c.sell_vol) > 0.5;
-    const sellFlash = sellChanged && c.sell_vol > 0 ? 'flash' : '';
-    const buyFlash = buyChanged && c.buy_vol > 0 ? 'flash' : '';
 
     html += `
       <div class="cluster-row">
-        <div class="cluster-vol-sell ${c.sell_vol === 0 ? 'zero' : ''}">
-          ${c.sell_vol > 0 ? Math.round(c.sell_vol).toLocaleString() : '·'}
-        </div>
+        <div class="cluster-vol-sell ${c.sell_vol === 0 ? 'zero' : ''}">${c.sell_vol > 0 ? Math.round(c.sell_vol).toLocaleString() : '·'}</div>
         <div class="cluster-bar-wrap sell">
-          <div class="cluster-bar sell ${sellStrong} ${sellFlash}" style="width: ${sellPct}%;"></div>
+          <div class="cluster-bar sell ${sellStrong}" style="width: ${sellPct}%;"></div>
         </div>
         <div class="cluster-price">${c.price_mid.toFixed(2)}</div>
         <div class="cluster-bar-wrap buy">
-          <div class="cluster-bar buy ${buyStrong} ${buyFlash}" style="width: ${buyPct}%;"></div>
+          <div class="cluster-bar buy ${buyStrong}" style="width: ${buyPct}%;"></div>
         </div>
-        <div class="cluster-vol-buy ${c.buy_vol === 0 ? 'zero' : ''}">
-          ${c.buy_vol > 0 ? Math.round(c.buy_vol).toLocaleString() : '·'}
-        </div>
+        <div class="cluster-vol-buy ${c.buy_vol === 0 ? 'zero' : ''}">${c.buy_vol > 0 ? Math.round(c.buy_vol).toLocaleString() : '·'}</div>
       </div>
     `;
-    prevClusterMap[key] = { buy: c.buy_vol, sell: c.sell_vol };
   });
   container.innerHTML = html;
 }
 
+function renderOrderBook(ob) {
+  const container = document.getElementById('obContainer');
+  if (!ob || !ob.bids || !ob.asks || (ob.bids.length === 0 && ob.asks.length === 0)) {
+    container.innerHTML = '<div style="color:#5a5e68;padding:20px;text-align:center;font-size:10px;">Waiting...</div>';
+    return;
+  }
+
+  const totalSell = ob.total_sell || ob.asks.reduce((s, l) => s + (l.sell || 0), 0);
+  const totalBuy = ob.total_buy || ob.bids.reduce((s, l) => s + (l.buy || 0), 0);
+  const totalVolume = totalSell + totalBuy;
+  const delta = totalBuy - totalSell;
+  const sellPct = totalVolume > 0 ? (totalSell / totalVolume) * 100 : 50;
+  const buyPct = totalVolume > 0 ? (totalBuy / totalVolume) * 100 : 50;
+
+  let deltaText = '', deltaClass = 'delta-neutral';
+  if (delta > 0) { deltaText = `+${Math.round(delta).toLocaleString()}`; deltaClass = 'delta-buy'; }
+  else if (delta < 0) { deltaText = `${Math.round(delta).toLocaleString()}`; deltaClass = 'delta-sell'; }
+  else { deltaText = '0'; }
+
+  const maxVol = Math.max(
+    ...ob.bids.map(b => b.total || 0),
+    ...ob.asks.map(a => a.total || 0),
+    1
+  );
+
+  let html = `<div class="ob-header"><span>SELL</span><span>PRICE</span><span>BUY</span></div>`;
+
+  const asksSorted = [...ob.asks].sort((a, b) => b.price - a.price);
+  asksSorted.forEach(level => {
+    const sellVol = level.sell || 0, buyVol = level.buy || 0;
+    html += `
+      <div class="ob-row">
+        <div class="ob-bar-sell" style="width: ${(sellVol / maxVol) * 33}%;"></div>
+        <div class="ob-bar-buy" style="width: ${(buyVol / maxVol) * 33}%;"></div>
+        <div class="ob-sell-vol ${sellVol === 0 ? 'zero' : ''}">${sellVol > 0 ? Math.round(sellVol).toLocaleString() : '·'}</div>
+        <div class="ob-price ask">${level.price.toFixed(2)}</div>
+        <div class="ob-buy-vol ${buyVol === 0 ? 'zero' : ''}">${buyVol > 0 ? Math.round(buyVol).toLocaleString() : '·'}</div>
+      </div>`;
+  });
+
+  if (ob.current) {
+    html += `<div class="ob-row current"><div class="ob-sell-vol">—</div><div class="ob-price current">${ob.current.toFixed(2)}</div><div class="ob-buy-vol">—</div></div>`;
+  }
+
+  ob.bids.forEach(level => {
+    const sellVol = level.sell || 0, buyVol = level.buy || 0;
+    html += `
+      <div class="ob-row">
+        <div class="ob-bar-sell" style="width: ${(sellVol / maxVol) * 33}%;"></div>
+        <div class="ob-bar-buy" style="width: ${(buyVol / maxVol) * 33}%;"></div>
+        <div class="ob-sell-vol ${sellVol === 0 ? 'zero' : ''}">${sellVol > 0 ? Math.round(sellVol).toLocaleString() : '·'}</div>
+        <div class="ob-price bid">${level.price.toFixed(2)}</div>
+        <div class="ob-buy-vol ${buyVol === 0 ? 'zero' : ''}">${buyVol > 0 ? Math.round(buyVol).toLocaleString() : '·'}</div>
+      </div>`;
+  });
+
+  html += `
+    <div class="ob-summary">
+      <div class="ob-summary-row"><span class="ob-summary-label">SELL</span><span class="ob-summary-value sell">${Math.round(totalSell).toLocaleString()}</span></div>
+      <div class="ob-summary-row"><span class="ob-summary-label">BUY</span><span class="ob-summary-value buy">${Math.round(totalBuy).toLocaleString()}</span></div>
+      <div class="ob-summary-row"><span class="ob-summary-label">DELTA</span><span class="ob-summary-value ${deltaClass}">${deltaText}</span></div>
+      <div class="ob-summary-bar">
+        <div class="ob-summary-bar-sell" style="width: ${sellPct}%;"></div>
+        <div class="ob-summary-bar-buy" style="width: ${buyPct}%;"></div>
+      </div>
+    </div>`;
+
+  container.innerHTML = html;
+}
+
+// ═══ FETCHERS ═══
 async function fetchCandles(tf) {
   try {
     const res = await fetch(`/api/candles?tf=${tf}&t=${Date.now()}`);
@@ -371,9 +1338,78 @@ async function fetchCandles(tf) {
     const unique = {};
     ohlcData.forEach(d => { unique[d.time] = d; });
     const sorted = Object.values(unique).sort((a, b) => a.time - b.time);
-    candleSeries.setData(sorted);
+
+    const lastCandle = sorted[sorted.length - 1];
+
+    if (lastData.length === 0) {
+      candleSeries.setData(sorted);
+      lastData = sorted;
+      lastCandleTime = lastCandle.time;
+
+      if (sorted.length > 200) {
+        candleChart.timeScale().setVisibleLogicalRange({
+          from: sorted.length - 200,
+          to: sorted.length + 10,
+        });
+      } else {
+        candleChart.timeScale().fitContent();
+      }
+    } else {
+      candleSeries.update(lastCandle);
+      lastData = sorted;
+      lastCandleTime = lastCandle.time;
+    }
+
     document.getElementById('current-tf').textContent = tf.toUpperCase();
-  } catch (e) { console.error(e); }
+  } catch (e) { }
+}
+
+async function fetchFootprint(tf) {
+  try {
+    const res = await fetch(`/api/footprint?tf=${tf}&t=${Date.now()}`);
+    const d = await res.json();
+    if (d.footprint) {
+      lastFootprint = d.footprint;
+      renderFootprint(d.footprint);
+    }
+  } catch (e) { }
+}
+
+async function fetchDelta(tf) {
+  try {
+    const res = await fetch(`/api/delta?tf=${tf}&t=${Date.now()}`);
+    const d = await res.json();
+    if (!d.delta_data || d.delta_data.length === 0) return;
+
+    const deltaData = d.delta_data.map(item => ({
+      time: Math.floor(new Date(item.time).getTime() / 1000),
+      value: item.delta,
+      color: item.delta >= 0 ? '#26a69a' : '#ef5350',
+    }));
+
+    const cvdData = d.delta_data.map(item => ({
+      time: Math.floor(new Date(item.time).getTime() / 1000),
+      value: item.cvd,
+    }));
+
+    const deltaUnique = {};
+    deltaData.forEach(d => { deltaUnique[d.time] = d; });
+    const deltaSorted = Object.values(deltaUnique).sort((a, b) => a.time - b.time);
+
+    const cvdUnique = {};
+    cvdData.forEach(d => { cvdUnique[d.time] = d; });
+    const cvdSorted = Object.values(cvdUnique).sort((a, b) => a.time - b.time);
+
+    deltaSeries.setData(deltaSorted);
+    cvdSeries.setData(cvdSorted);
+
+    if (cvdSorted.length > 0) {
+      const lastCvd = cvdSorted[cvdSorted.length - 1].value;
+      const badge = document.getElementById('cvd-badge');
+      badge.textContent = (lastCvd >= 0 ? '+' : '') + Math.round(lastCvd).toLocaleString();
+      badge.style.color = lastCvd >= 0 ? '#26a69a' : '#ef5350';
+    }
+  } catch (e) { }
 }
 
 async function fetchClusters() {
@@ -381,7 +1417,7 @@ async function fetchClusters() {
     const res = await fetch('/api/clusters?t=' + Date.now());
     const d = await res.json();
     renderCluster(d.clusters);
-  } catch (e) { console.error(e); }
+  } catch (e) { }
 }
 
 async function fetchStatus() {
@@ -389,7 +1425,6 @@ async function fetchStatus() {
     const res = await fetch('/api/status?t=' + Date.now());
     const d = await res.json();
 
-    // ─── Sirf real price — NO POC fallback ───
     let displayPrice = d.price;
 
     if (displayPrice && displayPrice !== null) {
@@ -402,10 +1437,19 @@ async function fetchStatus() {
       el.textContent = displayPrice.toFixed(2);
       lastPrice = displayPrice;
 
-      document.getElementById('lvl-current').textContent = displayPrice.toFixed(2);
-      document.getElementById('lvl-current').className = 'val-neutral';
-    } else {
-      document.getElementById('price').textContent = '—';
+      if (candleSeries && lastCandleTime > 0) {
+        const data = candleSeries.data();
+        const lastCandle = data[data.length - 1];
+        if (lastCandle && lastCandle.time === lastCandleTime) {
+          candleSeries.update({
+            time: lastCandleTime,
+            open: lastCandle.open,
+            high: Math.max(lastCandle.high, displayPrice),
+            low: Math.min(lastCandle.low, displayPrice),
+            close: displayPrice,
+          });
+        }
+      }
     }
 
     if (d.change !== null && d.change !== undefined) {
@@ -419,102 +1463,72 @@ async function fetchStatus() {
       document.getElementById('status-spread').textContent = d.spread.toFixed(2);
     }
 
-    if (d.poc) {
-      document.getElementById('lvl-poc').textContent = d.poc.toFixed(2);
-      if (displayPrice) {
-        const dist = displayPrice - d.poc;
-        const el = document.getElementById('lvl-poc-dist');
-        el.textContent = (dist >= 0 ? '+' : '') + dist.toFixed(1);
-        el.className = dist >= 0 ? 'val-up' : 'val-down';
-      }
-    }
-    if (d.hvn && d.hvn.length > 0 && displayPrice) {
-      const n = d.hvn.reduce((a, b) => Math.abs(b - displayPrice) < Math.abs(a - displayPrice) ? b : a);
-      document.getElementById('lvl-hvn').textContent = n.toFixed(2);
-      const el = document.getElementById('lvl-hvn-dist');
-      el.textContent = (n - displayPrice >= 0 ? '+' : '') + (n - displayPrice).toFixed(1);
-      el.className = n - displayPrice >= 0 ? 'val-up' : 'val-down';
-    }
-    if (d.lvn && d.lvn.length > 0 && displayPrice) {
-      const n = d.lvn.reduce((a, b) => Math.abs(b - displayPrice) < Math.abs(a - displayPrice) ? b : a);
-      document.getElementById('lvl-lvn').textContent = n.toFixed(2);
-      const el = document.getElementById('lvl-lvn-dist');
-      el.textContent = (n - displayPrice >= 0 ? '+' : '') + (n - displayPrice).toFixed(1);
-      el.className = n - displayPrice >= 0 ? 'val-up' : 'val-down';
-    }
-    if (displayPrice && d.poc) {
-      const dist = displayPrice - d.poc;
-      const el = document.getElementById('lvl-zone');
-      if (Math.abs(dist) < 0.5) { el.textContent = 'AT POC'; el.className = 'val-poc'; }
-      else if (dist > 0) { el.textContent = 'ABOVE POC'; el.className = 'val-up'; }
-      else { el.textContent = 'BELOW POC'; el.className = 'val-down'; }
-    }
+    if (d.order_book) renderOrderBook(d.order_book);
+    if (d.ob_type) document.getElementById('ob-type').textContent = d.ob_type;
 
     if (d.profile && d.profile.length > 0) {
-      const now = Math.floor(Date.now() / 1000);
-      const vpData = d.profile.map((p, i) => ({
-        time: now - (d.profile.length - i) * 60,
-        value: p.volume,
-        color: p.type === 'poc' ? '#ffb300'
-              : p.type === 'hvn' ? 'rgba(38,166,154,0.7)'
-              : p.type === 'lvn' ? 'rgba(171,71,188,0.7)'
-              : 'rgba(120,120,120,0.3)',
-      }));
-      vpSeries.setData(vpData);
-      vpChart.timeScale().fitContent();
+      renderVP(d.profile, d.vah, d.val);
+    }
+
+    if (d.absorptions) {
+      lastAbsorptions = d.absorptions;
+      renderAbsorptions(d.absorptions);
     }
 
     document.getElementById('status').textContent = 'Live · ' + new Date().toLocaleTimeString();
-  } catch (e) {
-    document.getElementById('status').textContent = 'Error: ' + e.message;
-    console.error(e);
-  }
+  } catch (e) { }
 }
 
-function startTimer() {
-  setInterval(() => {
-    const tfSec = TF_SECONDS[currentTF] || 3600;
-    const now = Math.floor(Date.now() / 1000);
-    const elapsed = now % tfSec;
-    const remaining = tfSec - elapsed;
+// ═══ TOGGLE BUTTONS ═══
+document.getElementById('bubblesToggle').addEventListener('click', () => {
+  bubblesVisible = !bubblesVisible;
+  const btn = document.getElementById('bubblesToggle');
+  btn.textContent = bubblesVisible ? 'BUBBLES: ON' : 'BUBBLES: OFF';
+  if (bubblesVisible) btn.classList.add('opt-on');
+  else btn.classList.remove('opt-on');
+  renderAbsorptions(lastAbsorptions);
+  showNotif('Bubbles ' + (bubblesVisible ? 'enabled' : 'disabled'), 'info');
+});
 
-    const mins = Math.floor(remaining / 60);
-    const secs = remaining % 60;
-    const timeStr = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
-
-    const badge = document.getElementById('timerBadge');
-    document.getElementById('timerValue').textContent = timeStr;
-
-    badge.className = 'timer-badge';
-    if (remaining <= 10) badge.classList.add('danger');
-    else if (remaining <= 60) badge.classList.add('warning');
-  }, 1000);
-}
-
-document.querySelectorAll('.tf-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.tf-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    currentTF = btn.dataset.tf;
-    fetchCandles(currentTF);
-  });
+document.getElementById('footprintToggle').addEventListener('click', () => {
+  footprintVisible = !footprintVisible;
+  const btn = document.getElementById('footprintToggle');
+  btn.textContent = footprintVisible ? 'FOOTPRINT: ON' : 'FOOTPRINT: OFF';
+  if (footprintVisible) btn.classList.add('opt-on');
+  else btn.classList.remove('opt-on');
+  renderFootprint(lastFootprint);
+  showNotif('Footprint ' + (footprintVisible ? 'enabled' : 'disabled'), 'info');
 });
 
 document.getElementById('resetZoom').addEventListener('click', () => {
-  if (candleChart) candleChart.timeScale().fitContent();
-  if (vpChart) vpChart.timeScale().fitContent();
+  const data = candleSeries.data();
+  if (data.length > 200) {
+    candleChart.timeScale().setVisibleLogicalRange({
+      from: data.length - 200,
+      to: data.length + 10,
+    });
+  } else {
+    candleChart.timeScale().fitContent();
+  }
+  updateBubblePositions();
+  showNotif('Zoom reset', 'info');
 });
 
+// ═══ INIT ═══
 window.addEventListener('load', () => {
   initCandleChart();
-  initVPChart();
+  initDeltaChart();
   fetchCandles(currentTF);
+  fetchDelta(currentTF);
+  fetchFootprint(currentTF);
   fetchClusters();
   fetchStatus();
-  startTimer();
-  setInterval(fetchStatus, 5000);
-  setInterval(fetchClusters, 5000);
-  setInterval(() => fetchCandles(currentTF), 30000);
+
+  setInterval(fetchStatus, 500);
+  setInterval(fetchClusters, 1000);
+  setInterval(() => fetchCandles(currentTF), 5000);
+  setInterval(() => fetchDelta(currentTF), 5000);
+  setInterval(() => fetchFootprint(currentTF), 5000);
 });
 </script>
 
