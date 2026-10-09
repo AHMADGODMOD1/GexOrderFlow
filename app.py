@@ -38,7 +38,7 @@ def fetch_candles(tf, limit=200, retries=3):
             raw = bq.ohlc(SYMBOL, interval=tf, limit=limit)
             if not raw:
                 print(f"[CANDLE EMPTY {tf}] attempt {attempt+1}")
-                time.sleep(2)
+                time.sleep(1)
                 continue
             candles = []
             for row in raw:
@@ -53,7 +53,7 @@ def fetch_candles(tf, limit=200, retries=3):
             return candles
         except Exception as e:
             print(f"[CANDLE ERROR {tf} attempt {attempt+1}] {e}")
-            time.sleep(2)
+            time.sleep(1)
     return []
 
 # ═══════════════════════════════════════════════
@@ -231,7 +231,7 @@ def refresh_data():
                     print(f"[REFRESH] POC={result['poc']:.2f}")
         except Exception as e:
             print(f"[REFRESH ERROR] {e}")
-        time.sleep(60)
+        time.sleep(30)  # 30 seconds
 
 def ticker():
     while True:
@@ -246,7 +246,7 @@ def ticker():
                 cache["last_update"] = time.strftime('%H:%M:%S')
                 print(f"[TICK] {cache['price']}")
             else:
-                # ─── FALLBACK: Use last 1m candle close ───
+                # Fallback: use last 1m candle close
                 c1m = cache["candles"].get("1m", [])
                 if c1m:
                     last = c1m[-1]
@@ -259,13 +259,11 @@ def ticker():
                     print(f"[TICK-FALLBACK] {cache['price']}")
         except Exception as e:
             print(f"[TICK ERROR] {e}")
-            # ─── Fallback on error too ───
             c1m = cache["candles"].get("1m", [])
             if c1m:
-                last = c1m[-1]
-                cache["price"] = last["close"]
+                cache["price"] = c1m[-1]["close"]
                 cache["last_update"] = time.strftime('%H:%M:%S')
-        time.sleep(10)
+        time.sleep(5)  # 5 seconds
 
 # ═══════════════════════════════════════════════
 # ROUTES
@@ -320,7 +318,7 @@ if h1:
         cache["profile"] = result["profile"]
         print(f"[START] POC={result['poc']:.2f}")
 
-# ═══ BACKGROUND THREADS START ═══
+# ─── BACKGROUND THREADS START ───
 threading.Thread(target=refresh_data, daemon=True).start()
 threading.Thread(target=ticker, daemon=True).start()
 print("[START] Background threads started")
