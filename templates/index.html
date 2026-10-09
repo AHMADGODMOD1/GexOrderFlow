@@ -8,15 +8,22 @@
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html, body {
-    width: 100%; height: 100%;
+    width: 100%;
     font-family: -apple-system, "Segoe UI", Tahoma, sans-serif;
     background: #131722; color: #d1d4dc; font-size: 12px;
+    overflow: hidden;
+  }
+  .app {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
     overflow: hidden;
   }
   .topbar {
     display: flex; align-items: center; height: 38px;
     background: #1e222d; border-bottom: 1px solid #2a2e39;
     padding: 0 10px; gap: 8px;
+    flex-shrink: 0;
   }
   .brand {
     display: flex; align-items: center; gap: 8px;
@@ -46,18 +53,8 @@
   .tb-btn:hover { background: #363a45; }
   .tb-btn.warn { background: #d32f2f; color: #fff; border-color: #d32f2f; }
   .tb-spacer { flex: 1; }
-  .symbol-info { display: flex; align-items: center; gap: 10px; font-family: "Consolas", monospace; }
-  .symbol-name { font-size: 14px; font-weight: 700; color: #fff; }
-  .symbol-price { font-size: 14px; font-weight: 700; color: #26a69a; transition: color 0.2s; }
-  .symbol-price.up { color: #26a69a; }
-  .symbol-price.down { color: #ef5350; }
-  .symbol-chg { font-size: 11px; color: #26a69a; }
-  .symbol-chg.down { color: #ef5350; }
-  .conn-status { display: flex; align-items: center; gap: 5px; font-size: 10px; color: #26a69a; font-family: "Consolas", monospace; }
-  .conn-dot { width: 6px; height: 6px; border-radius: 50%; background: #26a69a; animation: pulse 2s infinite; }
-  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
 
-  /* ─── TIMER BADGE ─── */
+  /* ─── TIMER ─── */
   .timer-badge {
     display: flex; align-items: center; gap: 6px;
     padding: 2px 10px;
@@ -65,9 +62,7 @@
     border: 1px solid rgba(41, 98, 255, 0.4);
     border-radius: 4px;
     font-family: "Consolas", monospace;
-    font-size: 12px;
-    font-weight: 700;
-    color: #2962ff;
+    font-size: 12px; font-weight: 700; color: #2962ff;
     transition: all 0.3s;
   }
   .timer-badge.warning {
@@ -88,11 +83,47 @@
   .timer-label { font-size: 9px; color: #787b86; }
   .timer-value { font-size: 13px; font-weight: 700; }
 
-  .layout {
-    display: grid; grid-template-columns: 1fr 460px;
-    height: calc(100vh - 62px); gap: 1px; background: #2a2e39;
+  .symbol-info { display: flex; align-items: center; gap: 10px; font-family: "Consolas", monospace; }
+  .symbol-name { font-size: 14px; font-weight: 700; color: #fff; }
+  .symbol-price { font-size: 14px; font-weight: 700; transition: color 0.2s; }
+  .symbol-price.up { color: #26a69a; }
+  .symbol-price.down { color: #ef5350; }
+  .symbol-chg { font-size: 11px; color: #26a69a; }
+  .symbol-chg.down { color: #ef5350; }
+  .conn-status { display: flex; align-items: center; gap: 5px; font-size: 10px; color: #26a69a; font-family: "Consolas", monospace; }
+  .conn-dot { width: 6px; height: 6px; border-radius: 50%; background: #26a69a; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+  /* ─── MAIN LAYOUT ─── */
+  .main {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1fr 460px;
+    gap: 1px;
+    background: #2a2e39;
+    overflow: hidden;
+    min-height: 0;
   }
-  .panel { background: #131722; display: flex; flex-direction: column; overflow: hidden; }
+  .left-col {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    min-height: 0;
+  }
+  .right-col {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    background: #2a2e39;
+    overflow: hidden;
+    min-height: 0;
+  }
+  .panel {
+    background: #131722;
+    display: flex; flex-direction: column;
+    overflow: hidden;
+    min-height: 0;
+  }
   .panel-header {
     display: flex; align-items: center; justify-content: space-between;
     height: 24px; background: #1e222d;
@@ -100,12 +131,21 @@
   }
   .panel-title { font-size: 10px; color: #b2b5be; text-transform: uppercase; letter-spacing: 1px; font-weight: 600; }
   .panel-badge { font-size: 10px; color: #2962ff; font-family: "Consolas", monospace; }
-  .panel-body { flex: 1; position: relative; overflow: hidden; }
-  .left-col, .right-col { display: flex; flex-direction: column; gap: 1px; background: #2a2e39; }
+  .panel-body {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+    min-height: 0;
+  }
+
+  /* ─── CLUSTER ─── */
   .cluster-container {
-    display: flex; flex-direction: column; height: 100%;
-    overflow-y: auto; font-family: "Consolas", monospace;
-    font-size: 11px; padding: 2px 0;
+    height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+    font-family: "Consolas", monospace;
+    font-size: 11px;
+    padding: 2px 0;
   }
   .cluster-row {
     display: grid; grid-template-columns: 48px 1fr 70px 1fr 48px;
@@ -122,7 +162,6 @@
     text-align: center; color: #b2b5be; font-weight: 700; font-size: 11px;
     background: rgba(42,46,57,0.4); padding: 2px 0; border-radius: 2px;
   }
-  .cluster-price.near-live { color: #ffb300; background: rgba(255,179,0,0.15); }
   .cluster-bar-wrap { height: 16px; position: relative; display: flex; align-items: center; }
   .cluster-bar-wrap.sell { justify-content: flex-end; }
   .cluster-bar-wrap.buy { justify-content: flex-start; }
@@ -147,13 +186,8 @@
     50% { box-shadow: 0 0 20px rgba(38,166,154,1), 0 0 40px rgba(38,166,154,0.6); transform: scaleY(1.3); }
     100% { box-shadow: 0 0 0 rgba(38,166,154,0); transform: scaleY(1); }
   }
-  @keyframes rowPulse {
-    0%, 100% { background: rgba(42,46,57,0); }
-    50% { background: rgba(88,166,255,0.15); }
-  }
   .cluster-bar.sell.flash { animation: glowSell 1.2s ease-out; }
   .cluster-bar.buy.flash { animation: glowBuy 1.2s ease-out; }
-  .cluster-row.flash { animation: rowPulse 1.2s ease-out; }
   .cluster-legend {
     display: flex; justify-content: space-between; height: 24px;
     padding: 0 10px; background: #1e222d; border-top: 1px solid #2a2e39;
@@ -161,11 +195,14 @@
   }
   .legend-sell { color: #ab47bc; }
   .legend-buy { color: #26a69a; }
+
+  /* ─── LEVEL TABLE ─── */
   .level-table { width: 100%; border-collapse: collapse; font-size: 11px; font-family: "Consolas", monospace; }
   .level-table th {
     text-align: left; padding: 6px 10px; font-size: 9px;
     color: #787b86; text-transform: uppercase;
     background: #1e222d; border-bottom: 1px solid #2a2e39;
+    position: sticky; top: 0;
   }
   .level-table td { padding: 6px 10px; border-bottom: 1px solid #1e222d; color: #d1d4dc; }
   .level-table tr:hover { background: #1e222d; }
@@ -175,11 +212,14 @@
   .level-table .val-hvn { color: #26a69a; }
   .level-table .val-lvn { color: #ab47bc; }
   .level-table .val-neutral { color: #787b86; }
+
+  /* ─── STATUS BAR ─── */
   .statusbar {
-    position: fixed; bottom: 0; left: 0; right: 0; height: 24px;
+    height: 24px;
     background: #1e222d; border-top: 1px solid #2a2e39;
     display: flex; align-items: center; padding: 0 12px; gap: 20px;
     font-size: 10px; font-family: "Consolas", monospace; color: #787b86;
+    flex-shrink: 0;
   }
   .statusbar-item { display: flex; gap: 5px; align-items: center; }
   .statusbar-value { color: #d1d4dc; }
@@ -187,108 +227,122 @@
 </head>
 <body>
 
-<div class="topbar">
-  <div class="brand">
-    <div class="brand-logo">GEX ORDER FLOW</div>
-    <div class="brand-tag">LIVE</div>
-  </div>
-  <button class="tf-btn" data-tf="1m">1m</button>
-  <button class="tf-btn" data-tf="5m">5m</button>
-  <button class="tf-btn" data-tf="15m">15m</button>
-  <button class="tf-btn" data-tf="30m">30m</button>
-  <button class="tf-btn active" data-tf="1h">1H</button>
-  <button class="tf-btn" data-tf="4h">4H</button>
-  <button class="tf-btn" data-tf="1d">1D</button>
-  <div class="tb-sep"></div>
-  <button class="tb-btn warn" id="resetZoom">⟲ RESET</button>
+<div class="app">
 
-  <!-- ═══ TIMER BADGE ═══ -->
-  <div class="timer-badge" id="timerBadge">
-    <span class="timer-label">CLOSE IN</span>
-    <span class="timer-value" id="timerValue">--:--</span>
-  </div>
+  <!-- ═══ TOP BAR ═══ -->
+  <div class="topbar">
+    <div class="brand">
+      <div class="brand-logo">GEX ORDER FLOW</div>
+      <div class="brand-tag">LIVE</div>
+    </div>
+    <button class="tf-btn" data-tf="1m">1m</button>
+    <button class="tf-btn" data-tf="5m">5m</button>
+    <button class="tf-btn" data-tf="15m">15m</button>
+    <button class="tf-btn" data-tf="30m">30m</button>
+    <button class="tf-btn active" data-tf="1h">1H</button>
+    <button class="tf-btn" data-tf="4h">4H</button>
+    <button class="tf-btn" data-tf="1d">1D</button>
+    <div class="tb-sep"></div>
+    <button class="tb-btn warn" id="resetZoom">⟲ RESET</button>
 
-  <div class="tb-spacer"></div>
-  <div class="symbol-info">
-    <span class="symbol-name">XAUUSD</span>
-    <span class="symbol-price up" id="price">—</span>
-    <span class="symbol-chg" id="change">—</span>
-  </div>
-  <div class="tb-sep"></div>
-  <div class="conn-status">
-    <span class="conn-dot"></span>
-    <span>LIVE</span>
-  </div>
-</div>
+    <div class="timer-badge" id="timerBadge">
+      <span class="timer-label">CLOSE IN</span>
+      <span class="timer-value" id="timerValue">--:--</span>
+    </div>
 
-<div class="layout">
-  <div class="left-col">
-    <div class="panel" style="flex: 1;">
-      <div class="panel-header">
-        <span class="panel-title">XAUUSD · <span id="current-tf">1H</span></span>
-        <span class="panel-badge">CANDLESTICK · TV CHART</span>
-      </div>
-      <div class="panel-body" id="candleChartWrap"></div>
+    <div class="tb-spacer"></div>
+    <div class="symbol-info">
+      <span class="symbol-name">XAUUSD</span>
+      <span class="symbol-price up" id="price">—</span>
+      <span class="symbol-chg" id="change">—</span>
+    </div>
+    <div class="tb-sep"></div>
+    <div class="conn-status">
+      <span class="conn-dot"></span>
+      <span>LIVE</span>
     </div>
   </div>
 
-  <div class="right-col">
-    <div class="panel" style="flex: 2;">
-      <div class="panel-header">
-        <span class="panel-title">Cluster Footprint</span>
-        <span class="panel-badge">HIGH → LOW</span>
-      </div>
-      <div class="panel-body">
-        <div class="cluster-container" id="clusterContainer"></div>
-      </div>
-      <div class="cluster-legend">
-        <span class="legend-sell">◀ AGGRESSOR SELL</span>
-        <span class="legend-buy">AGGRESSOR BUY ▶</span>
+  <!-- ═══ MAIN ═══ -->
+  <div class="main">
+
+    <!-- LEFT: Candle chart -->
+    <div class="left-col">
+      <div class="panel" style="flex: 1;">
+        <div class="panel-header">
+          <span class="panel-title">XAUUSD · <span id="current-tf">1H</span></span>
+          <span class="panel-badge">CANDLESTICK · TV CHART</span>
+        </div>
+        <div class="panel-body" id="candleChartWrap"></div>
       </div>
     </div>
 
-    <div class="panel" style="flex: 1;">
-      <div class="panel-header">
-        <span class="panel-title">Volume Profile</span>
-        <span class="panel-badge">POC · HVN · LVN</span>
-      </div>
-      <div class="panel-body" id="vpChartWrap"></div>
-    </div>
+    <!-- RIGHT: Cluster + VP + Levels -->
+    <div class="right-col">
 
-    <div class="panel" style="flex: 1;">
-      <div class="panel-header">
-        <span class="panel-title">Key Levels</span>
-        <span class="panel-badge" id="levels-badge">—</span>
+      <!-- Cluster Footprint -->
+      <div class="panel" style="flex: 2;">
+        <div class="panel-header">
+          <span class="panel-title">Cluster Footprint</span>
+          <span class="panel-badge">HIGH → LOW</span>
+        </div>
+        <div class="panel-body">
+          <div class="cluster-container" id="clusterContainer"></div>
+        </div>
+        <div class="cluster-legend">
+          <span class="legend-sell">◀ AGGRESSOR SELL</span>
+          <span class="legend-buy">AGGRESSOR BUY ▶</span>
+        </div>
       </div>
-      <div style="overflow-y: auto; flex: 1;">
-        <table class="level-table">
-          <thead>
-            <tr><th>LEVEL</th><th>PRICE</th><th>DIST</th></tr>
-          </thead>
-          <tbody>
-            <tr><td>Current</td><td id="lvl-current">—</td><td class="val-neutral">—</td></tr>
-            <tr><td>POC</td><td class="val-poc" id="lvl-poc">—</td><td id="lvl-poc-dist">—</td></tr>
-            <tr><td>Nearest HVN</td><td class="val-hvn" id="lvl-hvn">—</td><td id="lvl-hvn-dist">—</td></tr>
-            <tr><td>Nearest LVN</td><td class="val-lvn" id="lvl-lvn">—</td><td id="lvl-lvn-dist">—</td></tr>
-            <tr><td>Zone</td><td id="lvl-zone">—</td><td class="val-neutral">—</td></tr>
-          </tbody>
-        </table>
+
+      <!-- Volume Profile -->
+      <div class="panel" style="flex: 1;">
+        <div class="panel-header">
+          <span class="panel-title">Volume Profile</span>
+          <span class="panel-badge">POC · HVN · LVN</span>
+        </div>
+        <div class="panel-body" id="vpChartWrap"></div>
       </div>
+
+      <!-- Key Levels -->
+      <div class="panel" style="flex: 1;">
+        <div class="panel-header">
+          <span class="panel-title">Key Levels</span>
+          <span class="panel-badge" id="levels-badge">LIVE</span>
+        </div>
+        <div class="panel-body" style="overflow-y: auto;">
+          <table class="level-table">
+            <thead>
+              <tr><th>LEVEL</th><th>PRICE</th><th>DIST</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Current</td><td id="lvl-current" class="val-neutral">—</td><td class="val-neutral">—</td></tr>
+              <tr><td>POC</td><td class="val-poc" id="lvl-poc">—</td><td id="lvl-poc-dist">—</td></tr>
+              <tr><td>Nearest HVN</td><td class="val-hvn" id="lvl-hvn">—</td><td id="lvl-hvn-dist">—</td></tr>
+              <tr><td>Nearest LVN</td><td class="val-lvn" id="lvl-lvn">—</td><td id="lvl-lvn-dist">—</td></tr>
+              <tr><td>Zone</td><td id="lvl-zone">—</td><td class="val-neutral">—</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
     </div>
   </div>
-</div>
 
-<div class="statusbar">
-  <div class="statusbar-item">
-    <span>●</span>
-    <span class="statusbar-value" id="status">Connecting...</span>
+  <!-- ═══ STATUS BAR ═══ -->
+  <div class="statusbar">
+    <div class="statusbar-item">
+      <span>●</span>
+      <span class="statusbar-value" id="status">Connecting...</span>
+    </div>
+    <div class="statusbar-item"><span>DATA:</span><span class="statusbar-value">Biquote · MT5</span></div>
+    <div class="statusbar-item"><span>BID:</span><span class="statusbar-value" id="status-bid">—</span></div>
+    <div class="statusbar-item"><span>ASK:</span><span class="statusbar-value" id="status-ask">—</span></div>
+    <div class="statusbar-item"><span>SPREAD:</span><span class="statusbar-value" id="status-spread">—</span></div>
+    <div style="flex:1;"></div>
+    <div class="statusbar-item">GEX Order Flow v1.0</div>
   </div>
-  <div class="statusbar-item"><span>DATA:</span><span class="statusbar-value">Biquote · MT5</span></div>
-  <div class="statusbar-item"><span>BID:</span><span class="statusbar-value" id="status-bid">—</span></div>
-  <div class="statusbar-item"><span>ASK:</span><span class="statusbar-value" id="status-ask">—</span></div>
-  <div class="statusbar-item"><span>SPREAD:</span><span class="statusbar-value" id="status-spread">—</span></div>
-  <div style="flex:1;"></div>
-  <div class="statusbar-item">GEX Order Flow v1.0</div>
+
 </div>
 
 <script>
@@ -299,7 +353,6 @@ let prevClusterMap = {};
 let lastCandleTime = 0;
 let lastPrice = null;
 
-// ═══ TIMER CONFIG ═══
 const TF_SECONDS = {
   "1m": 60, "5m": 300, "15m": 900, "30m": 1800,
   "1h": 3600, "4h": 14400, "1d": 86400
@@ -372,10 +425,9 @@ function renderCluster(clusters) {
     const sellChanged = !prev || Math.abs((prev.sell || 0) - c.sell_vol) > 0.5;
     const sellFlash = sellChanged && c.sell_vol > 0 ? 'flash' : '';
     const buyFlash = buyChanged && c.buy_vol > 0 ? 'flash' : '';
-    const rowFlash = (sellChanged || buyChanged) ? 'flash' : '';
 
     html += `
-      <div class="cluster-row ${rowFlash}">
+      <div class="cluster-row">
         <div class="cluster-vol-sell ${c.sell_vol === 0 ? 'zero' : ''}">
           ${c.sell_vol > 0 ? Math.round(c.sell_vol).toLocaleString() : '·'}
         </div>
@@ -396,7 +448,6 @@ function renderCluster(clusters) {
   container.innerHTML = html;
 }
 
-// ═══ FETCH CANDLES (uses update for live) ═══
 async function fetchCandles(tf) {
   try {
     const res = await fetch(`/api/candles?tf=${tf}&t=${Date.now()}`);
@@ -409,15 +460,12 @@ async function fetchCandles(tf) {
     const unique = {};
     ohlcData.forEach(d => { unique[d.time] = d; });
     const sorted = Object.values(unique).sort((a, b) => a.time - b.time);
-
-    // ─── Full set data first time ───
     candleSeries.setData(sorted);
     lastCandleTime = sorted[sorted.length - 1].time;
     document.getElementById('current-tf').textContent = tf.toUpperCase();
   } catch (e) { console.error(e); }
 }
 
-// ═══ FETCH CLUSTERS ═══
 async function fetchClusters() {
   try {
     const res = await fetch('/api/clusters?t=' + Date.now());
@@ -426,21 +474,16 @@ async function fetchClusters() {
   } catch (e) { console.error(e); }
 }
 
-// ═══ FETCH STATUS + LIVE PRICE UPDATE ═══
 async function fetchStatus() {
   try {
     const res = await fetch('/api/status?t=' + Date.now());
     const d = await res.json();
 
-    // ─── Price with color change ───
+    // ─── Price: only real price, NO POC fallback ───
     let displayPrice = d.price;
-    if (!displayPrice || displayPrice === null) {
-      displayPrice = d.poc;
-    }
 
-    if (displayPrice) {
+    if (displayPrice && displayPrice !== null) {
       const el = document.getElementById('price');
-      // Color based on price movement
       let cls = 'symbol-price up';
       if (lastPrice !== null) {
         cls = displayPrice >= lastPrice ? 'symbol-price up' : 'symbol-price down';
@@ -449,16 +492,10 @@ async function fetchStatus() {
       el.textContent = displayPrice.toFixed(2);
       lastPrice = displayPrice;
 
-      // ─── Live candle update (last candle) ───
-      if (lastCandleTime > 0) {
-        candleSeries.update({
-          time: lastCandleTime,
-          open: displayPrice,
-          high: displayPrice,
-          low: displayPrice,
-          close: displayPrice,
-        });
-      }
+      // Update Current row
+      document.getElementById('lvl-current').textContent = displayPrice.toFixed(2);
+    } else {
+      document.getElementById('price').textContent = '—';
     }
 
     if (d.change !== null && d.change !== undefined) {
@@ -472,13 +509,7 @@ async function fetchStatus() {
       document.getElementById('status-spread').textContent = d.spread.toFixed(2);
     }
 
-    // ─── Current price row ───
-    if (displayPrice) {
-      document.getElementById('lvl-current').textContent = displayPrice.toFixed(2);
-      document.getElementById('lvl-current').className = 'val-neutral';
-    }
-
-    // ─── POC row ───
+    // POC
     if (d.poc) {
       document.getElementById('lvl-poc').textContent = d.poc.toFixed(2);
       if (displayPrice) {
@@ -489,7 +520,7 @@ async function fetchStatus() {
       }
     }
 
-    // ─── HVN row ───
+    // HVN
     if (d.hvn && d.hvn.length > 0 && displayPrice) {
       const n = d.hvn.reduce((a, b) => Math.abs(b - displayPrice) < Math.abs(a - displayPrice) ? b : a);
       document.getElementById('lvl-hvn').textContent = n.toFixed(2);
@@ -498,7 +529,7 @@ async function fetchStatus() {
       el.className = n - displayPrice >= 0 ? 'val-up' : 'val-down';
     }
 
-    // ─── LVN row ───
+    // LVN
     if (d.lvn && d.lvn.length > 0 && displayPrice) {
       const n = d.lvn.reduce((a, b) => Math.abs(b - displayPrice) < Math.abs(a - displayPrice) ? b : a);
       document.getElementById('lvl-lvn').textContent = n.toFixed(2);
@@ -507,7 +538,7 @@ async function fetchStatus() {
       el.className = n - displayPrice >= 0 ? 'val-up' : 'val-down';
     }
 
-    // ─── Zone row ───
+    // Zone
     if (displayPrice && d.poc) {
       const dist = displayPrice - d.poc;
       const el = document.getElementById('lvl-zone');
@@ -516,10 +547,7 @@ async function fetchStatus() {
       else { el.textContent = 'BELOW POC'; el.className = 'val-down'; }
     }
 
-    // ─── Update badge ───
-    document.getElementById('levels-badge').textContent = 'LIVE';
-
-    // ─── Volume Profile ───
+    // Volume profile
     if (d.profile && d.profile.length > 0) {
       const now = Math.floor(Date.now() / 1000);
       const vpData = d.profile.map((p, i) => ({
@@ -541,7 +569,6 @@ async function fetchStatus() {
   }
 }
 
-// ═══ TIMER COUNTDOWN ═══
 function startTimer() {
   setInterval(() => {
     const tfSec = TF_SECONDS[currentTF] || 3600;
@@ -556,17 +583,12 @@ function startTimer() {
     const badge = document.getElementById('timerBadge');
     document.getElementById('timerValue').textContent = timeStr;
 
-    // Color change based on time remaining
     badge.className = 'timer-badge';
-    if (remaining <= 10) {
-      badge.classList.add('danger');
-    } else if (remaining <= 60) {
-      badge.classList.add('warning');
-    }
+    if (remaining <= 10) badge.classList.add('danger');
+    else if (remaining <= 60) badge.classList.add('warning');
   }, 1000);
 }
 
-// ═══ BUTTONS ═══
 document.querySelectorAll('.tf-btn').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('.tf-btn').forEach(b => b.classList.remove('active'));
@@ -587,14 +609,10 @@ window.addEventListener('load', () => {
   fetchCandles(currentTF);
   fetchClusters();
   fetchStatus();
-
-  // Start timer
   startTimer();
-
-  // ═══ SAB 5 SECOND UPDATE ═══
-  setInterval(fetchStatus, 5000);       // price 5s
-  setInterval(fetchClusters, 5000);     // clusters 5s
-  setInterval(() => fetchCandles(currentTF), 30000);  // candles 30s
+  setInterval(fetchStatus, 5000);
+  setInterval(fetchClusters, 5000);
+  setInterval(() => fetchCandles(currentTF), 30000);
 });
 </script>
 
