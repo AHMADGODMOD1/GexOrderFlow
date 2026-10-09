@@ -2,128 +2,321 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>GEX Order Flow</title>
 <script src="https://unpkg.com/lightweight-charts@4.1.3/dist/lightweight-charts.standalone.production.js"></script>
 <style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html, body {
-    width: 100%;
+    width: 100%; height: 100%;
     font-family: "Segoe UI", Tahoma, sans-serif;
     background: #0a0b0f; color: #d1d4dc; font-size: 12px;
     overflow: hidden;
+    -webkit-font-smoothing: antialiased;
   }
-  .app { display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+  .app { display: flex; flex-direction: column; height: 100vh; height: 100dvh; overflow: hidden; }
 
-  /* ─── MENU BAR ─── */
-  .menubar {
-    display: flex; align-items: center; height: 28px;
-    background: #0f1117; border-bottom: 1px solid #1e2028;
-    padding: 0 8px; gap: 4px; flex-shrink: 0;
-    font-size: 11px; color: #b0b4be;
+  /* ═══════════════════════════════════════
+     STARTUP SCREEN
+     ═══════════════════════════════════════ */
+  .startup-screen {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: radial-gradient(ellipse at center, #0f1420 0%, #050608 100%);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    overflow-y: auto;
   }
+  .startup-screen.hidden { display: none; }
+  .startup-container {
+    max-width: 560px;
+    width: 100%;
+    padding: 20px;
+  }
+  .startup-logo {
+    text-align: center;
+    margin-bottom: 40px;
+  }
+  .startup-logo h1 {
+    font-size: 32px;
+    font-weight: 800;
+    letter-spacing: 3px;
+    background: linear-gradient(135deg, #4a9eff 0%, #2962ff 50%, #7c4dff 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 8px;
+  }
+  .startup-logo p {
+    font-size: 11px;
+    color: #5a5e68;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+  .startup-title {
+    font-size: 13px;
+    color: #8a8e98;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    font-weight: 700;
+    margin-bottom: 16px;
+    text-align: center;
+  }
+  .template-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+  .template-card {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 16px;
+    background: rgba(20, 24, 34, 0.6);
+    border: 1.5px solid #1e2028;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+    backdrop-filter: blur(10px);
+  }
+  .template-card:hover {
+    background: rgba(30, 36, 48, 0.8);
+    border-color: #4a9eff;
+    transform: translateY(-2px);
+  }
+  .template-card.selected {
+    background: rgba(74, 158, 255, 0.1);
+    border-color: #4a9eff;
+    box-shadow: 0 0 0 3px rgba(74, 158, 255, 0.15);
+  }
+  .template-icon {
+    width: 48px; height: 48px;
+    background: linear-gradient(135deg, #4a9eff 0%, #2962ff 100%);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; font-weight: 800; color: #fff;
+    flex-shrink: 0;
+    box-shadow: 0 4px 12px rgba(74, 158, 255, 0.3);
+  }
+  .template-card:nth-child(2) .template-icon {
+    background: linear-gradient(135deg, #26a69a 0%, #00897b 100%);
+    box-shadow: 0 4px 12px rgba(38, 166, 154, 0.3);
+  }
+  .template-card:nth-child(3) .template-icon {
+    background: linear-gradient(135deg, #7c4dff 0%, #5e35b1 100%);
+    box-shadow: 0 4px 12px rgba(124, 77, 255, 0.3);
+  }
+  .template-card:nth-child(4) .template-icon {
+    background: linear-gradient(135deg, #ff9800 0%, #e65100 100%);
+    box-shadow: 0 4px 12px rgba(255, 152, 0, 0.3);
+  }
+  .template-info { flex: 1; }
+  .template-name {
+    font-size: 14px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 3px;
+  }
+  .template-desc {
+    font-size: 11px;
+    color: #6a6e78;
+    line-height: 1.4;
+  }
+  .template-badge {
+    font-size: 9px;
+    color: #26a69a;
+    padding: 3px 8px;
+    background: rgba(38, 166, 154, 0.15);
+    border-radius: 4px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    flex-shrink: 0;
+  }
+  .startup-btn {
+    width: 100%;
+    height: 48px;
+    background: linear-gradient(135deg, #4a9eff 0%, #2962ff 100%);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 4px 16px rgba(74, 158, 255, 0.4);
+  }
+  .startup-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(74, 158, 255, 0.5);
+  }
+  .startup-btn:disabled {
+    background: #2a2d38;
+    color: #5a5e68;
+    cursor: not-allowed;
+    box-shadow: none;
+    transform: none;
+  }
+
+  /* ═══════════════════════════════════════
+     DASHBOARD (hidden by default)
+     ═══════════════════════════════════════ */
+  .dashboard {
+    display: none;
+    flex-direction: column;
+    height: 100vh;
+    height: 100dvh;
+    overflow: hidden;
+  }
+  .dashboard.active { display: flex; }
+
+  /* MENU BAR */
+  .menubar {
+    display: flex; align-items: center; height: 36px;
+    background: #0f1117; border-bottom: 1px solid #1e2028;
+    padding: 0 10px; gap: 4px; flex-shrink: 0;
+    font-size: 12px; color: #b0b4be;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .menubar::-webkit-scrollbar { display: none; }
   .menu-item {
-    padding: 4px 10px; cursor: pointer;
-    border-radius: 3px; transition: background 0.15s;
+    padding: 6px 12px; cursor: pointer;
+    border-radius: 4px; transition: background 0.15s;
+    white-space: nowrap;
+    font-weight: 600;
+    flex-shrink: 0;
   }
   .menu-item:hover { background: #1e2028; color: #fff; }
-  .menu-sep { width: 1px; height: 16px; background: #1e2028; margin: 0 4px; }
-  .menu-spacer { flex: 1; }
-  .menu-title {
-    text-align: center; color: #5a5e68; font-size: 10px;
-    font-weight: 600; letter-spacing: 0.5px;
-  }
+  .menu-sep { width: 1px; height: 18px; background: #1e2028; margin: 0 4px; flex-shrink: 0; }
+  .menu-spacer { flex: 1; min-width: 8px; }
 
-  /* ─── TOOLBAR ─── */
+  /* TOOLBAR */
   .toolbar {
-    display: flex; align-items: center; height: 34px;
+    display: flex; align-items: center; height: 44px;
     background: #0f1117; border-bottom: 1px solid #1e2028;
     padding: 0 10px; gap: 6px; flex-shrink: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
   }
+  .toolbar::-webkit-scrollbar { display: none; }
   .brand {
     display: flex; align-items: center; gap: 6px;
     padding-right: 12px; border-right: 1px solid #1e2028; margin-right: 4px;
+    flex-shrink: 0;
   }
-  .brand-logo { font-size: 12px; font-weight: 800; color: #4a9eff; letter-spacing: 0.8px; }
+  .brand-logo { font-size: 13px; font-weight: 800; color: #4a9eff; letter-spacing: 0.8px; }
   .brand-tag {
     font-size: 8px; color: #26a69a; padding: 2px 5px;
     background: rgba(38,166,154,0.15); border-radius: 2px; font-weight: 700;
   }
 
-  /* ─── TIMEFRAME DROPDOWN ─── */
+  /* TIMEFRAME DROPDOWN */
   .tf-dropdown {
-    position: relative; display: inline-block;
+    position: relative; display: inline-block; flex-shrink: 0;
   }
   .tf-dropdown-btn {
-    height: 24px; padding: 0 10px;
-    font-size: 11px; font-weight: 700;
+    height: 30px; padding: 0 12px;
+    font-size: 12px; font-weight: 700;
     background: #1a1d26; color: #fff;
-    border: 1px solid #2a2d38; border-radius: 3px;
+    border: 1px solid #2a2d38; border-radius: 4px;
     cursor: pointer; font-family: "Consolas", monospace;
-    display: flex; align-items: center; gap: 6px;
-    min-width: 70px; justify-content: space-between;
+    display: flex; align-items: center; gap: 8px;
+    min-width: 80px; justify-content: space-between;
   }
-  .tf-dropdown-btn:hover { background: #22262f; border-color: #3a3d48; }
-  .tf-dropdown-btn::after {
-    content: "▼"; font-size: 8px; color: #6a6e78;
-  }
+  .tf-dropdown-btn:hover { background: #22262f; }
+  .tf-dropdown-btn::after { content: "▼"; font-size: 8px; color: #6a6e78; }
   .tf-dropdown-menu {
     display: none;
-    position: absolute; top: 28px; left: 0;
+    position: absolute; top: 34px; left: 0;
     background: #161920; border: 1px solid #2a2d38;
-    border-radius: 4px; padding: 4px;
-    min-width: 80px; z-index: 1000;
+    border-radius: 6px; padding: 4px;
+    min-width: 100px; z-index: 1000;
     box-shadow: 0 8px 24px rgba(0,0,0,0.6);
   }
   .tf-dropdown-menu.show { display: block; }
   .tf-dropdown-item {
-    padding: 6px 12px; font-size: 11px;
-    color: #b0b4be; cursor: pointer; border-radius: 3px;
+    padding: 8px 14px; font-size: 12px;
+    color: #b0b4be; cursor: pointer; border-radius: 4px;
     font-family: "Consolas", monospace;
-    display: flex; justify-content: space-between;
+    font-weight: 600;
   }
   .tf-dropdown-item:hover { background: #22262f; color: #fff; }
   .tf-dropdown-item.active { background: #2962ff; color: #fff; }
 
-  .tb-sep { width: 1px; height: 20px; background: #1e2028; margin: 0 4px; }
+  .tb-sep { width: 1px; height: 22px; background: #1e2028; margin: 0 4px; flex-shrink: 0; }
   .tb-btn {
-    height: 24px; padding: 0 10px; font-size: 10px;
+    height: 30px; padding: 0 12px; font-size: 11px;
     background: #1a1d26; color: #b0b4be;
-    border: 1px solid #2a2d38; border-radius: 3px;
+    border: 1px solid #2a2d38; border-radius: 4px;
     cursor: pointer; font-family: "Consolas", monospace;
-    font-weight: 600; transition: all 0.15s;
+    font-weight: 700; transition: all 0.15s;
+    white-space: nowrap; flex-shrink: 0;
   }
-  .tb-btn:hover { background: #22262f; color: #fff; border-color: #3a3d48; }
+  .tb-btn:hover { background: #22262f; color: #fff; }
   .tb-btn.warn { background: #b71c1c; color: #fff; border-color: #b71c1c; }
-  .tb-btn.warn:hover { background: #c62828; }
   .tb-btn.opt-on { background: #2962ff; color: #fff; border-color: #2962ff; }
-  .tb-btn.opt-on:hover { background: #4a9eff; }
   .tb-btn.primary { background: #4a9eff; color: #fff; border-color: #4a9eff; }
-  .tb-btn.primary:hover { background: #6ab0ff; }
-  .tb-spacer { flex: 1; }
+  .tb-spacer { flex: 1; min-width: 8px; }
 
-  .symbol-info { display: flex; align-items: center; gap: 12px; font-family: "Consolas", monospace; }
-  .symbol-name { font-size: 13px; font-weight: 700; color: #fff; }
-  .symbol-price { font-size: 13px; font-weight: 700; }
+  .symbol-info {
+    display: flex; align-items: center; gap: 10px;
+    font-family: "Consolas", monospace; flex-shrink: 0;
+  }
+  .symbol-name { font-size: 14px; font-weight: 700; color: #fff; }
+  .symbol-price { font-size: 14px; font-weight: 700; }
   .symbol-price.up { color: #26a69a; }
   .symbol-price.down { color: #ef5350; }
-  .symbol-chg { font-size: 10px; color: #26a69a; }
+  .symbol-chg { font-size: 11px; color: #26a69a; }
   .symbol-chg.down { color: #ef5350; }
-  .conn-status { display: flex; align-items: center; gap: 5px; font-size: 10px; color: #26a69a; font-family: "Consolas", monospace; }
-  .conn-dot { width: 5px; height: 5px; border-radius: 50%; background: #26a69a; animation: pulse 2s infinite; }
+  .conn-status {
+    display: flex; align-items: center; gap: 5px;
+    font-size: 10px; color: #26a69a;
+    font-family: "Consolas", monospace; flex-shrink: 0;
+  }
+  .conn-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: #26a69a; animation: pulse 2s infinite;
+  }
   @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
 
-  /* ─── MAIN LAYOUT ─── */
+  /* ═══════════════════════════════════════
+     MAIN LAYOUT — RESPONSIVE
+     ═══════════════════════════════════════ */
   .main {
     flex: 1;
     display: grid;
-    grid-template-columns: 200px 200px 1fr 360px;
     gap: 1px;
     background: #1e2028;
     overflow: hidden;
     min-height: 0;
-    height: calc(100vh - 62px);
   }
+
+  /* DESKTOP */
+  @media (min-width: 1025px) {
+    .main { grid-template-columns: 200px 200px 1fr 360px; }
+  }
+  /* TABLET */
+  @media (min-width: 641px) and (max-width: 1024px) {
+    .main { grid-template-columns: 160px 160px 1fr 280px; }
+  }
+  /* MOBILE */
+  @media (max-width: 640px) {
+    .main {
+      grid-template-columns: 1fr;
+      grid-auto-rows: minmax(240px, auto);
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    .col { height: auto; min-height: 240px; }
+    .panel { min-height: 200px; }
+  }
+
   .col {
     display: flex; flex-direction: column;
     background: #0a0b0f; overflow: hidden;
@@ -136,29 +329,27 @@
     flex: 1;
     position: relative;
   }
-  .panel.draggable { cursor: move; }
-  .panel.dragging {
-    opacity: 0.5;
-    border: 2px dashed #4a9eff;
-  }
   .panel-header {
     display: flex; align-items: center; justify-content: space-between;
-    height: 24px; background: #0f1117;
-    border-bottom: 1px solid #1e2028; padding: 0 8px; flex-shrink: 0;
-    cursor: move;
-    user-select: none;
+    height: 28px; background: #0f1117;
+    border-bottom: 1px solid #1e2028; padding: 0 10px; flex-shrink: 0;
+    cursor: move; user-select: none;
   }
   .panel-header:hover { background: #13161d; }
-  .panel-title { font-size: 9px; color: #8a8e98; text-transform: uppercase; letter-spacing: 0.8px; font-weight: 700; }
-  .panel-badge { font-size: 9px; color: #4a9eff; font-family: "Consolas", monospace; }
+  .panel-title {
+    font-size: 10px; color: #8a8e98;
+    text-transform: uppercase; letter-spacing: 0.8px;
+    font-weight: 700;
+  }
+  .panel-badge { font-size: 10px; color: #4a9eff; font-family: "Consolas", monospace; }
   .panel-body { flex: 1; position: relative; overflow: hidden; min-height: 0; }
 
-  /* ─── ORDER BOOK ─── */
-  .ob-container { height: 100%; overflow-y: auto; font-family: "Consolas", monospace; font-size: 10px; background: #0a0b0f; }
+  /* ORDER BOOK */
+  .ob-container { height: 100%; overflow-y: auto; font-family: "Consolas", monospace; font-size: 10px; background: #0a0b0f; -webkit-overflow-scrolling: touch; }
   .ob-header {
     display: grid; grid-template-columns: 1fr 1fr 1fr;
     padding: 5px 6px; background: #0f1117; border-bottom: 1px solid #1e2028;
-    font-size: 8px; color: #5a5e68; text-transform: uppercase;
+    font-size: 9px; color: #5a5e68; text-transform: uppercase;
     position: sticky; top: 0; z-index: 3;
     letter-spacing: 0.5px; font-weight: 700;
   }
@@ -167,7 +358,7 @@
   .ob-header span:nth-child(3) { text-align: left; }
   .ob-row {
     display: grid; grid-template-columns: 1fr 1fr 1fr;
-    align-items: center; height: 18px; padding: 0 6px; gap: 2px;
+    align-items: center; height: 20px; padding: 0 6px; gap: 2px;
     border-bottom: 1px solid rgba(30,32,40,0.5);
     position: relative;
   }
@@ -175,7 +366,7 @@
     background: rgba(255, 179, 0, 0.12);
     border-top: 1px solid rgba(255, 179, 0, 0.4);
     border-bottom: 1px solid rgba(255, 179, 0, 0.4);
-    height: 22px;
+    height: 24px;
   }
   .ob-sell-vol { text-align: right; color: #ef5350; font-weight: 700; font-size: 10px; z-index: 1; }
   .ob-sell-vol.zero { color: #3a3d47; }
@@ -186,24 +377,23 @@
   .ob-buy-vol { text-align: left; color: #26a69a; font-weight: 700; font-size: 10px; z-index: 1; }
   .ob-buy-vol.zero { color: #3a3d47; }
   .ob-bar-sell {
-    position: absolute; right: 66.6%; height: 12px;
+    position: absolute; right: 66.6%; height: 14px;
     background: linear-gradient(90deg, rgba(239,83,80,0.08) 0%, rgba(239,83,80,0.35) 100%);
     border-radius: 2px 0 0 2px; top: 50%; transform: translateY(-50%); z-index: 0;
   }
   .ob-bar-buy {
-    position: absolute; left: 66.6%; height: 12px;
+    position: absolute; left: 66.6%; height: 14px;
     background: linear-gradient(90deg, rgba(38,166,154,0.35) 0%, rgba(38,166,154,0.08) 100%);
     border-radius: 0 2px 2px 0; top: 50%; transform: translateY(-50%); z-index: 0;
   }
   .ob-summary {
     position: sticky; bottom: 0;
     background: #0f1117; border-top: 1px solid #1e2028;
-    padding: 6px 6px;
-    font-family: "Consolas", monospace; font-size: 9px;
+    padding: 6px; font-family: "Consolas", monospace; font-size: 9px;
     z-index: 2;
   }
-  .ob-summary-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 3px; }
-  .ob-summary-label { color: #5a5e68; font-size: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .ob-summary-row { display: flex; justify-content: space-between; margin-bottom: 3px; }
+  .ob-summary-label { color: #5a5e68; font-size: 9px; text-transform: uppercase; }
   .ob-summary-value { font-weight: 700; font-size: 10px; }
   .ob-summary-value.sell { color: #ef5350; }
   .ob-summary-value.buy { color: #26a69a; }
@@ -211,72 +401,68 @@
   .ob-summary-value.delta-sell { color: #ef5350; }
   .ob-summary-value.delta-neutral { color: #ffb300; }
   .ob-summary-bar {
-    height: 5px; background: #1a1d26; border-radius: 2px;
+    height: 6px; background: #1a1d26; border-radius: 3px;
     overflow: hidden; display: flex; margin-top: 4px;
   }
   .ob-summary-bar-sell { background: #ef5350; }
   .ob-summary-bar-buy { background: #26a69a; }
 
-  /* ─── VOLUME PROFILE ─── */
+  /* VOLUME PROFILE */
   .vp-container {
     display: flex; flex-direction: column;
     height: 100%; font-family: "Consolas", monospace;
     font-size: 9px; overflow-y: auto; background: #0a0b0f;
+    -webkit-overflow-scrolling: touch;
   }
   .vp-legend {
     position: sticky; top: 0; background: #0f1117;
     border-bottom: 1px solid #1e2028; padding: 4px 6px;
     display: flex; justify-content: space-between;
-    font-size: 8px; color: #5a5e68; text-transform: uppercase;
+    font-size: 9px; color: #5a5e68; text-transform: uppercase;
     z-index: 3; flex-shrink: 0; font-weight: 700;
   }
   .vp-legend .sell { color: #ef5350; }
   .vp-legend .buy { color: #26a69a; }
   .vp-row {
     display: grid; grid-template-columns: 40px 1fr 42px;
-    align-items: center; height: 15px; padding: 0 4px; gap: 2px;
+    align-items: center; height: 16px; padding: 0 4px; gap: 2px;
     border-bottom: 1px solid rgba(30,32,40,0.25);
     position: relative;
   }
-  .vp-row:hover { background: rgba(30,32,40,0.4); }
-  .vp-row.in-va { background: rgba(41, 98, 255, 0.04); }
   .vp-row.poc {
     background: rgba(255, 179, 0, 0.12);
     border-top: 1px solid rgba(255, 179, 0, 0.35);
     border-bottom: 1px solid rgba(255, 179, 0, 0.35);
-    height: 18px;
+    height: 20px;
   }
   .vp-price { text-align: center; font-weight: 700; font-size: 9px; color: #8a8e98; z-index: 1; }
   .vp-price.poc { color: #ffb300; font-size: 10px; }
   .vp-price.hvn { color: #26a69a; }
   .vp-price.lvn { color: #ab47bc; }
-  .vp-bar-wrap { height: 11px; position: relative; display: flex; align-items: center; z-index: 1; }
+  .vp-bar-wrap { height: 12px; position: relative; display: flex; align-items: center; z-index: 1; }
   .vp-bar-total {
-    position: absolute; height: 11px; background: rgba(120,120,120,0.08);
+    position: absolute; height: 12px; background: rgba(120,120,120,0.08);
     border-radius: 2px; top: 0; left: 0; z-index: 0;
   }
-  .vp-bar-split { display: flex; width: 100%; height: 9px; position: relative; z-index: 1; }
+  .vp-bar-split { display: flex; width: 100%; height: 10px; position: relative; z-index: 1; }
   .vp-bar-buy {
-    height: 9px; background: linear-gradient(90deg, #26a69a 0%, rgba(38,166,154,0.5) 100%);
+    height: 10px; background: linear-gradient(90deg, #26a69a 0%, rgba(38,166,154,0.5) 100%);
     border-radius: 2px 0 0 2px;
   }
   .vp-bar-sell {
-    height: 9px; background: linear-gradient(90deg, rgba(239,83,80,0.5) 0%, #ef5350 100%);
+    height: 10px; background: linear-gradient(90deg, rgba(239,83,80,0.5) 0%, #ef5350 100%);
     border-radius: 0 2px 2px 0;
   }
-  .vp-vol { text-align: right; font-size: 8px; color: #5a5e68; font-weight: 600; z-index: 1; }
+  .vp-vol { text-align: right; font-size: 9px; color: #5a5e68; font-weight: 600; z-index: 1; }
   .vp-vol.poc { color: #ffb300; font-weight: 700; }
-  .vp-vol.hvn { color: #26a69a; font-weight: 700; }
-  .vp-vol.lvn { color: #ab47bc; }
 
-  /* ─── CLUSTER ─── */
-  .cluster-container { height: 100%; overflow-y: auto; overflow-x: hidden; font-family: "Consolas", monospace; font-size: 10px; padding: 2px 0; }
+  /* CLUSTER */
+  .cluster-container { height: 100%; overflow-y: auto; font-family: "Consolas", monospace; font-size: 10px; padding: 2px 0; -webkit-overflow-scrolling: touch; }
   .cluster-row {
     display: grid; grid-template-columns: 45px 1fr 65px 1fr 45px;
-    align-items: center; height: 22px; padding: 0 6px; gap: 4px;
+    align-items: center; height: 24px; padding: 0 6px; gap: 4px;
     border-bottom: 1px solid rgba(30,32,40,0.5);
   }
-  .cluster-row:hover { background: rgba(30,32,40,0.5); }
   .cluster-vol-sell { text-align: right; color: #ab47bc; font-weight: 700; font-size: 10px; padding-right: 2px; }
   .cluster-vol-sell.zero { color: #3a3d47; }
   .cluster-vol-buy { text-align: left; color: #26a69a; font-weight: 700; font-size: 10px; padding-left: 2px; }
@@ -285,29 +471,29 @@
     text-align: center; color: #b0b4be; font-weight: 700; font-size: 10px;
     background: rgba(30,32,40,0.4); padding: 2px 0; border-radius: 2px;
   }
-  .cluster-bar-wrap { height: 14px; position: relative; display: flex; align-items: center; }
+  .cluster-bar-wrap { height: 16px; position: relative; display: flex; align-items: center; }
   .cluster-bar-wrap.sell { justify-content: flex-end; }
   .cluster-bar-wrap.buy { justify-content: flex-start; }
-  .cluster-bar { height: 12px; border-radius: 2px; min-width: 0; }
+  .cluster-bar { height: 14px; border-radius: 2px; min-width: 0; }
   .cluster-bar.sell { background: linear-gradient(90deg, rgba(171,71,188,0.15) 0%, #ab47bc 100%); }
   .cluster-bar.sell.strong { background: linear-gradient(90deg, rgba(171,71,188,0.3) 0%, #c158dc 100%); }
   .cluster-bar.buy { background: linear-gradient(90deg, #26a69a 0%, rgba(38,166,154,0.15) 100%); }
   .cluster-bar.buy.strong { background: linear-gradient(90deg, #2ed4bf 0%, rgba(38,166,154,0.3) 100%); }
   .cluster-legend {
-    display: flex; justify-content: space-between; height: 22px;
+    display: flex; justify-content: space-between; height: 24px;
     padding: 0 10px; background: #0f1117; border-top: 1px solid #1e2028;
-    align-items: center; font-size: 9px; font-family: "Consolas", monospace; flex-shrink: 0;
+    align-items: center; font-size: 10px; font-family: "Consolas", monospace; flex-shrink: 0;
   }
   .legend-sell { color: #ab47bc; }
   .legend-buy { color: #26a69a; }
 
-  /* ─── FOOTPRINT ─── */
-  .fp-container { height: 100%; overflow-y: auto; font-family: "Consolas", monospace; font-size: 10px; background: #0a0b0f; padding: 4px; }
+  /* FOOTPRINT */
+  .fp-container { height: 100%; overflow-y: auto; font-family: "Consolas", monospace; font-size: 10px; background: #0a0b0f; padding: 4px; -webkit-overflow-scrolling: touch; }
   .fp-header {
     display: grid; grid-template-columns: 1fr 1fr 1fr;
     padding: 4px; background: #0f1117;
     border-bottom: 1px solid #1e2028;
-    font-size: 8px; color: #5a5e68; text-transform: uppercase;
+    font-size: 9px; color: #5a5e68; text-transform: uppercase;
     position: sticky; top: 0; z-index: 3; font-weight: 700;
   }
   .fp-header span:nth-child(1) { text-align: right; }
@@ -315,40 +501,39 @@
   .fp-header span:nth-child(3) { text-align: left; }
   .fp-row {
     display: grid; grid-template-columns: 1fr 1fr 1fr;
-    align-items: center; height: 18px; padding: 0 4px;
+    align-items: center; height: 20px; padding: 0 4px;
     border-bottom: 1px solid rgba(30,32,40,0.25);
     position: relative;
   }
-  .fp-row:hover { background: rgba(30,32,40,0.4); }
   .fp-row.poc { background: rgba(255, 179, 0, 0.12); }
   .fp-buy { text-align: right; color: #26a69a; font-weight: 700; font-size: 10px; z-index: 1; }
   .fp-price { text-align: center; color: #b0b4be; font-weight: 700; font-size: 10px; z-index: 1; }
   .fp-price.poc { color: #ffb300; }
   .fp-sell { text-align: left; color: #ef5350; font-weight: 700; font-size: 10px; z-index: 1; }
   .fp-bar-buy {
-    position: absolute; right: 66.6%; height: 10px;
+    position: absolute; right: 66.6%; height: 12px;
     background: rgba(38,166,154,0.35);
     top: 50%; transform: translateY(-50%); z-index: 0;
   }
   .fp-bar-sell {
-    position: absolute; left: 66.6%; height: 10px;
+    position: absolute; left: 66.6%; height: 12px;
     background: rgba(239,83,80,0.35);
     top: 50%; transform: translateY(-50%); z-index: 0;
   }
   .fp-summary {
     position: sticky; bottom: 0;
     background: #0f1117; border-top: 1px solid #1e2028;
-    padding: 6px; font-size: 9px;
+    padding: 6px; font-size: 10px;
   }
   .fp-summary-row { display: flex; justify-content: space-between; margin-bottom: 3px; }
-  .fp-summary-label { color: #5a5e68; font-size: 8px; text-transform: uppercase; }
+  .fp-summary-label { color: #5a5e68; font-size: 9px; text-transform: uppercase; }
   .fp-summary-value { font-weight: 700; font-size: 10px; }
   .fp-summary-value.buy { color: #26a69a; }
   .fp-summary-value.sell { color: #ef5350; }
   .fp-summary-value.delta-buy { color: #26a69a; }
   .fp-summary-value.delta-sell { color: #ef5350; }
 
-  /* ─── ABSORPTION BUBBLES ─── */
+  /* ABSORPTION BUBBLES */
   .absorption-bubble {
     position: absolute;
     border-radius: 50%;
@@ -376,162 +561,20 @@
   .absorption-bubble.size-large { width: 40px; height: 40px; font-size: 15px; }
   .absorption-bubble.size-xxl { width: 52px; height: 52px; font-size: 17px; }
 
-  /* ─── STATUS BAR ─── */
+  /* STATUS BAR */
   .statusbar {
-    height: 22px; background: #0f1117; border-top: 1px solid #1e2028;
-    display: flex; align-items: center; padding: 0 12px; gap: 18px;
-    font-size: 9px; font-family: "Consolas", monospace; color: #5a5e68;
+    height: 26px; background: #0f1117; border-top: 1px solid #1e2028;
+    display: flex; align-items: center; padding: 0 10px; gap: 12px;
+    font-size: 10px; font-family: "Consolas", monospace; color: #5a5e68;
     flex-shrink: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
   }
-  .statusbar-item { display: flex; gap: 5px; align-items: center; }
+  .statusbar::-webkit-scrollbar { display: none; }
+  .statusbar-item { display: flex; gap: 5px; align-items: center; white-space: nowrap; }
   .statusbar-value { color: #b0b4be; }
 
-  /* ─── MODAL ─── */
-  .modal-overlay {
-    display: none;
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0, 0, 0, 0.75);
-    z-index: 9999;
-    align-items: center;
-    justify-content: center;
-  }
-  .modal-overlay.show { display: flex; }
-  .modal {
-    background: #161920;
-    border: 1px solid #2a2d38;
-    border-radius: 8px;
-    min-width: 480px;
-    max-width: 600px;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
-    overflow: hidden;
-  }
-  .modal-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 14px 18px;
-    background: #0f1117;
-    border-bottom: 1px solid #1e2028;
-  }
-  .modal-title {
-    font-size: 13px; font-weight: 700; color: #fff;
-    display: flex; align-items: center; gap: 8px;
-  }
-  .modal-close {
-    background: transparent; border: none; color: #6a6e78;
-    font-size: 18px; cursor: pointer; padding: 0 4px;
-    font-family: "Consolas", monospace;
-  }
-  .modal-close:hover { color: #fff; }
-  .modal-body {
-    padding: 18px;
-    max-height: 400px;
-    overflow-y: auto;
-  }
-  .modal-section {
-    margin-bottom: 16px;
-  }
-  .modal-section-title {
-    font-size: 10px; color: #5a5e68;
-    text-transform: uppercase; letter-spacing: 1px;
-    font-weight: 700; margin-bottom: 8px;
-  }
-  .template-item {
-    display: flex; align-items: center; gap: 12px;
-    padding: 12px 14px;
-    background: #0f1117;
-    border: 1px solid #1e2028;
-    border-radius: 6px;
-    margin-bottom: 8px;
-    cursor: pointer;
-    transition: all 0.15s;
-  }
-  .template-item:hover {
-    background: #1a1d26;
-    border-color: #4a9eff;
-  }
-  .template-icon {
-    width: 36px; height: 36px;
-    background: linear-gradient(135deg, #4a9eff 0%, #2962ff 100%);
-    border-radius: 6px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 16px; font-weight: 800; color: #fff;
-  }
-  .template-info { flex: 1; }
-  .template-name {
-    font-size: 12px; font-weight: 700; color: #fff;
-    margin-bottom: 2px;
-  }
-  .template-desc {
-    font-size: 10px; color: #6a6e78;
-  }
-  .template-badge {
-    font-size: 9px; color: #26a69a;
-    padding: 2px 6px;
-    background: rgba(38,166,154,0.15);
-    border-radius: 3px;
-    font-weight: 700;
-  }
-  .modal-footer {
-    display: flex; justify-content: flex-end; gap: 8px;
-    padding: 12px 18px;
-    background: #0f1117;
-    border-top: 1px solid #1e2028;
-  }
-  .modal-btn {
-    padding: 8px 16px;
-    font-size: 11px; font-weight: 700;
-    border-radius: 4px;
-    cursor: pointer;
-    font-family: "Segoe UI", sans-serif;
-    transition: all 0.15s;
-  }
-  .modal-btn.cancel {
-    background: #1a1d26; color: #b0b4be;
-    border: 1px solid #2a2d38;
-  }
-  .modal-btn.cancel:hover { background: #22262f; }
-  .modal-btn.confirm {
-    background: #4a9eff; color: #fff;
-    border: 1px solid #4a9eff;
-  }
-  .modal-btn.confirm:hover { background: #6ab0ff; }
-
-  /* ─── CONTEXT MENU ─── */
-  .context-menu {
-    display: none;
-    position: fixed;
-    background: #161920;
-    border: 1px solid #2a2d38;
-    border-radius: 6px;
-    padding: 4px;
-    min-width: 180px;
-    z-index: 10000;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.7);
-  }
-  .context-menu.show { display: block; }
-  .context-item {
-    padding: 8px 12px;
-    font-size: 11px;
-    color: #b0b4be;
-    cursor: pointer;
-    border-radius: 4px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-family: "Segoe UI", sans-serif;
-  }
-  .context-item:hover { background: #22262f; color: #fff; }
-  .context-item.danger { color: #ef5350; }
-  .context-item.danger:hover { background: #2a1a1a; }
-  .context-sep {
-    height: 1px;
-    background: #1e2028;
-    margin: 4px 0;
-  }
-
-  /* ─── NOTIFICATION ─── */
+  /* NOTIFICATION */
   .notif {
     position: fixed;
     bottom: 40px; right: 20px;
@@ -546,40 +589,109 @@
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
     transform: translateX(400px);
     transition: transform 0.3s;
+    max-width: 90vw;
   }
   .notif.show { transform: translateX(0); }
   .notif.error { border-left-color: #ef5350; }
   .notif.info { border-left-color: #4a9eff; }
+
+  /* ═══════════════════════════════════════
+     MOBILE SPECIFIC
+     ═══════════════════════════════════════ */
+  @media (max-width: 640px) {
+    .startup-logo h1 { font-size: 24px; letter-spacing: 2px; }
+    .template-card { padding: 12px; gap: 10px; }
+    .template-icon { width: 40px; height: 40px; font-size: 16px; }
+    .template-name { font-size: 13px; }
+    .template-desc { font-size: 10px; }
+    .startup-btn { height: 44px; font-size: 13px; }
+    
+    .symbol-info { gap: 6px; }
+    .symbol-name { font-size: 12px; }
+    .symbol-price { font-size: 12px; }
+    
+    .panel-header { height: 26px; padding: 0 8px; }
+    .panel-title { font-size: 9px; }
+  }
 </style>
 </head>
 <body>
 
-<div class="app">
+<!-- ═══════════════════════════════════════
+     STARTUP SCREEN
+     ═══════════════════════════════════════ -->
+<div class="startup-screen" id="startupScreen">
+  <div class="startup-container">
+    <div class="startup-logo">
+      <h1>GEX ORDER FLOW</h1>
+      <p>Live Trading Terminal</p>
+    </div>
 
-  <!-- MENU BAR -->
+    <div class="startup-title">Select Layout Template</div>
+
+    <div class="template-grid">
+      <div class="template-card" data-template="default">
+        <div class="template-icon">D</div>
+        <div class="template-info">
+          <div class="template-name">Default Trading Layout</div>
+          <div class="template-desc">Order Book · Volume Profile · Chart · Footprint · Cluster</div>
+        </div>
+        <div class="template-badge">STARTER</div>
+      </div>
+
+      <div class="template-card" data-template="scalper">
+        <div class="template-icon">S</div>
+        <div class="template-info">
+          <div class="template-name">Scalper Layout</div>
+          <div class="template-desc">Chart dominant · Delta · Footprint · Quick Order Book</div>
+        </div>
+        <div class="template-badge">FAST</div>
+      </div>
+
+      <div class="template-card" data-template="swing">
+        <div class="template-icon">W</div>
+        <div class="template-info">
+          <div class="template-name">Swing Layout</div>
+          <div class="template-desc">Wide chart · Volume Profile · CVD · Cluster</div>
+        </div>
+        <div class="template-badge">WIDE</div>
+      </div>
+
+      <div class="template-card" data-template="orderflow">
+        <div class="template-icon">O</div>
+        <div class="template-info">
+          <div class="template-name">Order Flow Pro</div>
+          <div class="template-desc">All panels · Absorption focus · Footprint detail</div>
+        </div>
+        <div class="template-badge">PRO</div>
+      </div>
+    </div>
+
+    <button class="startup-btn" id="loadTemplateBtn" disabled>SELECT A TEMPLATE</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     DASHBOARD
+     ═══════════════════════════════════════ -->
+<div class="dashboard" id="dashboard">
+
   <div class="menubar">
-    <div class="menu-item" onclick="openTemplateModal()">File</div>
+    <div class="menu-item" onclick="backToStartup()">Templates</div>
+    <div class="menu-sep"></div>
+    <div class="menu-item">File</div>
     <div class="menu-item">Account</div>
     <div class="menu-item">Help</div>
-    <div class="menu-sep"></div>
-    <div class="menu-item" onclick="openTemplateModal()">New Window</div>
-    <div class="menu-item" onclick="openTemplateModal()">Templates</div>
-    <div class="menu-sep"></div>
-    <div class="menu-item" onclick="showNotif('Chart saved', 'success')">Save Chart</div>
-    <div class="menu-spacer"></div>
-    <div class="menu-title" id="menuTitle">GEX Order Flow · Live Trading Terminal</div>
     <div class="menu-spacer"></div>
     <div class="menu-item">Data · XAUUSD</div>
   </div>
 
-  <!-- TOOLBAR -->
   <div class="toolbar">
     <div class="brand">
       <div class="brand-logo">GEX ORDER FLOW</div>
       <div class="brand-tag">LIVE</div>
     </div>
 
-    <!-- TIMEFRAME DROPDOWN -->
     <div class="tf-dropdown">
       <button class="tf-dropdown-btn" id="tfDropdownBtn" onclick="toggleTFDropdown()">
         <span id="tfLabel">1H</span>
@@ -599,7 +711,6 @@
     <button class="tb-btn warn" id="resetZoom">RESET</button>
     <button class="tb-btn opt-on" id="bubblesToggle">BUBBLES: ON</button>
     <button class="tb-btn" id="footprintToggle">FOOTPRINT: OFF</button>
-    <button class="tb-btn primary" id="newWindowBtn" onclick="openTemplateModal()">+ NEW WINDOW</button>
 
     <div class="tb-spacer"></div>
     <div class="symbol-info">
@@ -614,13 +725,11 @@
     </div>
   </div>
 
-  <!-- MAIN LAYOUT -->
   <div class="main" id="mainLayout">
 
-    <!-- COLUMN 1: Order Book -->
     <div class="col" data-col="1">
       <div class="panel" data-panel="orderbook">
-        <div class="panel-header" draggable="true">
+        <div class="panel-header">
           <span class="panel-title">Order Book</span>
           <span class="panel-badge" id="ob-type">—</span>
         </div>
@@ -632,10 +741,9 @@
       </div>
     </div>
 
-    <!-- COLUMN 2: Volume Profile -->
     <div class="col" data-col="2">
       <div class="panel" data-panel="volprofile">
-        <div class="panel-header" draggable="true">
+        <div class="panel-header">
           <span class="panel-title">Vol Profile</span>
           <span class="panel-badge" id="vp-badge">POC</span>
         </div>
@@ -647,18 +755,17 @@
       </div>
     </div>
 
-    <!-- COLUMN 3: Chart + Delta -->
     <div class="col" data-col="3">
       <div class="panel" data-panel="chart" style="flex: 2;">
-        <div class="panel-header" draggable="true">
-          <span class="panel-title">XAUUSD · <span id="current-tf">1H</span> · Candles</span>
-          <span class="panel-badge">ABSORPTION + FOOTPRINT</span>
+        <div class="panel-header">
+          <span class="panel-title">XAUUSD · <span id="current-tf">1H</span></span>
+          <span class="panel-badge">ABSORPTION</span>
         </div>
         <div class="panel-body" id="candleChartWrap" style="position: relative;"></div>
       </div>
 
       <div class="panel" data-panel="cvd" style="flex: 1;">
-        <div class="panel-header" draggable="true">
+        <div class="panel-header">
           <span class="panel-title">Delta & CVD</span>
           <span class="panel-badge" id="cvd-badge">—</span>
         </div>
@@ -666,11 +773,10 @@
       </div>
     </div>
 
-    <!-- COLUMN 4: Footprint + Cluster -->
     <div class="col" data-col="4">
       <div class="panel" data-panel="footprint" style="flex: 1;">
-        <div class="panel-header" draggable="true">
-          <span class="panel-title">Footprint (Last Candle)</span>
+        <div class="panel-header">
+          <span class="panel-title">Footprint (Last)</span>
           <span class="panel-badge" id="fp-badge">—</span>
         </div>
         <div class="panel-body">
@@ -681,8 +787,8 @@
       </div>
 
       <div class="panel" data-panel="cluster" style="flex: 1;">
-        <div class="panel-header" draggable="true">
-          <span class="panel-title">Cluster Footprint</span>
+        <div class="panel-header">
+          <span class="panel-title">Cluster</span>
           <span class="panel-badge">HIGH → LOW</span>
         </div>
         <div class="panel-body">
@@ -697,96 +803,21 @@
 
   </div>
 
-  <!-- STATUS BAR -->
   <div class="statusbar">
     <div class="statusbar-item">
-      <span>●</span>
+      <span style="color:#26a69a;">●</span>
       <span class="statusbar-value" id="status">Connecting...</span>
     </div>
-    <div class="statusbar-item"><span>DATA:</span><span class="statusbar-value">Biquote · MT5</span></div>
+    <div class="statusbar-item"><span>DATA:</span><span class="statusbar-value">Biquote</span></div>
     <div class="statusbar-item"><span>BID:</span><span class="statusbar-value" id="status-bid">—</span></div>
     <div class="statusbar-item"><span>ASK:</span><span class="statusbar-value" id="status-ask">—</span></div>
     <div class="statusbar-item"><span>SPREAD:</span><span class="statusbar-value" id="status-spread">—</span></div>
     <div style="flex:1;"></div>
-    <div class="statusbar-item">GEX Order Flow v10.0</div>
+    <div class="statusbar-item">v10.1</div>
   </div>
 
 </div>
 
-<!-- ═══ TEMPLATE MODAL ═══ -->
-<div class="modal-overlay" id="templateModal">
-  <div class="modal">
-    <div class="modal-header">
-      <div class="modal-title">New Window · Select Template</div>
-      <button class="modal-close" onclick="closeTemplateModal()">✕</button>
-    </div>
-    <div class="modal-body">
-      <div class="modal-section">
-        <div class="modal-section-title">Starter Templates</div>
-
-        <div class="template-item" onclick="loadTemplate('default')">
-          <div class="template-icon">D</div>
-          <div class="template-info">
-            <div class="template-name">Default Trading Layout</div>
-            <div class="template-desc">Order Book · Volume Profile · Chart · Footprint · Cluster</div>
-          </div>
-          <div class="template-badge">STARTER</div>
-        </div>
-
-        <div class="template-item" onclick="loadTemplate('scalper')">
-          <div class="template-icon">S</div>
-          <div class="template-info">
-            <div class="template-name">Scalper Layout</div>
-            <div class="template-desc">Chart dominant · Delta · Footprint · Quick Order Book</div>
-          </div>
-          <div class="template-badge">FAST</div>
-        </div>
-
-        <div class="template-item" onclick="loadTemplate('swing')">
-          <div class="template-icon">W</div>
-          <div class="template-info">
-            <div class="template-name">Swing Layout</div>
-            <div class="template-desc">Wide chart · Volume Profile · CVD · Cluster</div>
-          </div>
-          <div class="template-badge">WIDE</div>
-        </div>
-
-        <div class="template-item" onclick="loadTemplate('orderflow')">
-          <div class="template-icon">O</div>
-          <div class="template-info">
-            <div class="template-name">Order Flow Pro</div>
-            <div class="template-desc">All panels · Absorption focus · Footprint detail</div>
-          </div>
-          <div class="template-badge">PRO</div>
-        </div>
-      </div>
-
-      <div class="modal-section">
-        <div class="modal-section-title">Custom Templates</div>
-        <div style="color:#5a5e68;font-size:11px;padding:12px;text-align:center;background:#0f1117;border-radius:6px;border:1px dashed #2a2d38;">
-          No custom templates yet · Save current layout to create one
-        </div>
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="modal-btn cancel" onclick="closeTemplateModal()">Cancel</button>
-      <button class="modal-btn confirm" onclick="confirmLoadTemplate()">Confirm & Load</button>
-    </div>
-  </div>
-</div>
-
-<!-- ═══ CONTEXT MENU ═══ -->
-<div class="context-menu" id="contextMenu">
-  <div class="context-item" onclick="contextAction('add-indicator')">+ Add Indicator</div>
-  <div class="context-item" onclick="contextAction('add-chart')">+ Add Chart</div>
-  <div class="context-sep"></div>
-  <div class="context-item" onclick="contextAction('settings')">Settings</div>
-  <div class="context-item" onclick="contextAction('duplicate')">Duplicate Panel</div>
-  <div class="context-sep"></div>
-  <div class="context-item danger" onclick="contextAction('remove')">Remove Panel</div>
-</div>
-
-<!-- ═══ NOTIFICATION ═══ -->
 <div class="notif" id="notif"></div>
 
 <script>
@@ -800,8 +831,9 @@ let lastAbsorptions = [];
 let lastFootprint = {};
 let bubblesVisible = true;
 let footprintVisible = false;
-let pendingTemplate = null;
-let contextPanel = null;
+let selectedTemplate = null;
+let dashboardLoaded = false;
+let dataIntervals = [];
 
 const TF_SECONDS = {
   "1m": 60, "5m": 300, "15m": 900, "30m": 1800,
@@ -828,7 +860,93 @@ const tvTheme = {
   handleScale: { axisPressedMouseMove: true, mouseWheel: true, pinch: true },
 };
 
-// ═══ CHART INIT ═══
+// ═══════════════════════════════════════
+// STARTUP SCREEN LOGIC
+// ═══════════════════════════════════════
+document.querySelectorAll('.template-card').forEach(card => {
+  card.addEventListener('click', () => {
+    document.querySelectorAll('.template-card').forEach(c => c.classList.remove('selected'));
+    card.classList.add('selected');
+    selectedTemplate = card.dataset.template;
+    
+    const btn = document.getElementById('loadTemplateBtn');
+    btn.disabled = false;
+    btn.textContent = 'LOAD ' + selectedTemplate.toUpperCase() + ' TEMPLATE';
+  });
+});
+
+document.getElementById('loadTemplateBtn').addEventListener('click', () => {
+  if (!selectedTemplate) return;
+  loadDashboard(selectedTemplate);
+});
+
+function loadDashboard(template) {
+  document.getElementById('startupScreen').classList.add('hidden');
+  document.getElementById('dashboard').classList.add('active');
+  
+  applyTemplate(template);
+  
+  setTimeout(() => {
+    if (!dashboardLoaded) {
+      initCandleChart();
+      initDeltaChart();
+      dashboardLoaded = true;
+    }
+    
+    fetchCandles(currentTF);
+    fetchDelta(currentTF);
+    fetchFootprint(currentTF);
+    fetchClusters();
+    fetchStatus();
+    
+    dataIntervals.push(setInterval(fetchStatus, 500));
+    dataIntervals.push(setInterval(fetchClusters, 1000));
+    dataIntervals.push(setInterval(() => fetchCandles(currentTF), 5000));
+    dataIntervals.push(setInterval(() => fetchDelta(currentTF), 5000));
+    dataIntervals.push(setInterval(() => fetchFootprint(currentTF), 5000));
+    
+    showNotif('Template loaded: ' + template, 'success');
+  }, 150);
+}
+
+function backToStartup() {
+  dataIntervals.forEach(i => clearInterval(i));
+  dataIntervals = [];
+  
+  document.getElementById('dashboard').classList.remove('active');
+  document.getElementById('startupScreen').classList.remove('hidden');
+  
+  selectedTemplate = null;
+  document.querySelectorAll('.template-card').forEach(c => c.classList.remove('selected'));
+  
+  const btn = document.getElementById('loadTemplateBtn');
+  btn.disabled = true;
+  btn.textContent = 'SELECT A TEMPLATE';
+}
+
+function applyTemplate(name) {
+  const layout = document.getElementById('mainLayout');
+  const w = window.innerWidth;
+  
+  if (w <= 640) {
+    layout.style.gridTemplateColumns = '1fr';
+    return;
+  }
+  
+  if (name === 'scalper') {
+    layout.style.gridTemplateColumns = '160px 0px 1fr 340px';
+  } else if (name === 'swing') {
+    layout.style.gridTemplateColumns = '180px 240px 1fr 300px';
+  } else if (name === 'orderflow') {
+    layout.style.gridTemplateColumns = '220px 220px 1fr 400px';
+  } else {
+    layout.style.gridTemplateColumns = '200px 200px 1fr 360px';
+  }
+}
+
+// ═══════════════════════════════════════
+// CHART INIT
+// ═══════════════════════════════════════
 function initCandleChart() {
   const container = document.getElementById('candleChartWrap');
   container.innerHTML = '';
@@ -893,7 +1011,9 @@ function initDeltaChart() {
   });
 }
 
-// ═══ TIMEFRAME DROPDOWN ═══
+// ═══════════════════════════════════════
+// TIMEFRAME DROPDOWN
+// ═══════════════════════════════════════
 function toggleTFDropdown() {
   const menu = document.getElementById('tfDropdownMenu');
   menu.classList.toggle('show');
@@ -909,7 +1029,6 @@ document.querySelectorAll('.tf-dropdown-item').forEach(item => {
     
     document.getElementById('tfLabel').textContent = tf.toUpperCase();
     document.getElementById('current-tf').textContent = tf.toUpperCase();
-    
     document.getElementById('tfDropdownMenu').classList.remove('show');
     
     lastData = [];
@@ -917,104 +1036,19 @@ document.querySelectorAll('.tf-dropdown-item').forEach(item => {
     fetchDelta(currentTF);
     fetchFootprint(currentTF);
     
-    showNotif('Timeframe changed to ' + tf.toUpperCase(), 'info');
+    showNotif('Timeframe: ' + tf.toUpperCase(), 'info');
   });
 });
 
-// Close dropdown on outside click
 document.addEventListener('click', (e) => {
   if (!e.target.closest('.tf-dropdown')) {
     document.getElementById('tfDropdownMenu').classList.remove('show');
   }
 });
 
-// ═══ TEMPLATE MODAL ═══
-function openTemplateModal() {
-  document.getElementById('templateModal').classList.add('show');
-  pendingTemplate = null;
-}
-
-function closeTemplateModal() {
-  document.getElementById('templateModal').classList.remove('show');
-  pendingTemplate = null;
-}
-
-function loadTemplate(templateName) {
-  pendingTemplate = templateName;
-  document.querySelectorAll('.template-item').forEach(t => t.style.borderColor = '#1e2028');
-  event.currentTarget.style.borderColor = '#4a9eff';
-}
-
-function confirmLoadTemplate() {
-  if (!pendingTemplate) {
-    showNotif('Please select a template first', 'error');
-    return;
-  }
-
-  showNotif('Loading template: ' + pendingTemplate, 'info');
-  
-  setTimeout(() => {
-    applyTemplate(pendingTemplate);
-    closeTemplateModal();
-    showNotif('Template loaded successfully', 'success');
-  }, 600);
-}
-
-function applyTemplate(name) {
-  const layout = document.getElementById('mainLayout');
-  
-  if (name === 'scalper') {
-    layout.style.gridTemplateColumns = '160px 0px 1fr 340px';
-  } else if (name === 'swing') {
-    layout.style.gridTemplateColumns = '180px 240px 1fr 300px';
-  } else if (name === 'orderflow') {
-    layout.style.gridTemplateColumns = '220px 220px 1fr 400px';
-  } else {
-    layout.style.gridTemplateColumns = '200px 200px 1fr 360px';
-  }
-
-  setTimeout(() => {
-    if (candleChart) candleChart.applyOptions({ width: document.getElementById('candleChartWrap').clientWidth, height: document.getElementById('candleChartWrap').clientHeight });
-    if (deltaChart) deltaChart.applyOptions({ width: document.getElementById('deltaChartWrap').clientWidth, height: document.getElementById('deltaChartWrap').clientHeight });
-  }, 100);
-}
-
-// ═══ CONTEXT MENU ═══
-document.querySelectorAll('.panel-header').forEach(header => {
-  header.addEventListener('contextmenu', (e) => {
-    e.preventDefault();
-    contextPanel = e.currentTarget.closest('.panel');
-    const menu = document.getElementById('contextMenu');
-    menu.style.left = e.clientX + 'px';
-    menu.style.top = e.clientY + 'px';
-    menu.classList.add('show');
-  });
-});
-
-document.addEventListener('click', () => {
-  document.getElementById('contextMenu').classList.remove('show');
-});
-
-function contextAction(action) {
-  if (!contextPanel) return;
-
-  if (action === 'remove') {
-    contextPanel.style.display = 'none';
-    showNotif('Panel removed. Refresh to restore.', 'info');
-  } else if (action === 'settings') {
-    showNotif('Settings panel coming soon', 'info');
-  } else if (action === 'duplicate') {
-    showNotif('Duplicate feature coming soon', 'info');
-  } else if (action === 'add-indicator') {
-    showNotif('Search indicator... (feature coming soon)', 'info');
-  } else if (action === 'add-chart') {
-    showNotif('Add chart... (feature coming soon)', 'info');
-  }
-
-  document.getElementById('contextMenu').classList.remove('show');
-}
-
-// ═══ NOTIFICATIONS ═══
+// ═══════════════════════════════════════
+// NOTIFICATIONS
+// ═══════════════════════════════════════
 function showNotif(msg, type = 'success') {
   const notif = document.getElementById('notif');
   notif.textContent = msg;
@@ -1023,45 +1057,12 @@ function showNotif(msg, type = 'success') {
   
   setTimeout(() => {
     notif.classList.remove('show');
-  }, 3000);
+  }, 2500);
 }
 
-// ═══ DRAG & DROP (Panel reorder) ═══
-let draggedPanel = null;
-
-document.querySelectorAll('.panel-header').forEach(header => {
-  header.addEventListener('dragstart', (e) => {
-    draggedPanel = e.target.closest('.panel');
-    draggedPanel.classList.add('dragging');
-  });
-
-  header.addEventListener('dragend', (e) => {
-    if (draggedPanel) draggedPanel.classList.remove('dragging');
-    draggedPanel = null;
-  });
-});
-
-document.querySelectorAll('.panel').forEach(panel => {
-  panel.addEventListener('dragover', (e) => {
-    e.preventDefault();
-  });
-
-  panel.addEventListener('drop', (e) => {
-    e.preventDefault();
-    if (!draggedPanel || draggedPanel === panel) return;
-    
-    const parent1 = draggedPanel.parentNode;
-    const parent2 = panel.parentNode;
-    
-    if (parent1 === parent2) {
-      const next = panel.nextSibling === draggedPanel ? panel.nextSibling : panel;
-      parent1.insertBefore(draggedPanel, next);
-      showNotif('Panel repositioned', 'success');
-    }
-  });
-});
-
-// ═══ ABSORPTION BUBBLES ═══
+// ═══════════════════════════════════════
+// ABSORPTION BUBBLES
+// ═══════════════════════════════════════
 function renderAbsorptions(absorptions) {
   document.querySelectorAll('.absorption-bubble').forEach(el => el.remove());
 
@@ -1101,7 +1102,9 @@ function updateBubblePositions() {
   renderAbsorptions(lastAbsorptions);
 }
 
-// ═══ FOOTPRINT RENDER ═══
+// ═══════════════════════════════════════
+// FOOTPRINT
+// ═══════════════════════════════════════
 function renderFootprint(footprint) {
   const container = document.getElementById('fpContainer');
   if (!footprintVisible) {
@@ -1191,17 +1194,11 @@ function renderVP(profile, vah, val) {
 
     let rowClass = 'vp-row';
     if (p.type === 'poc') rowClass += ' poc';
-    else if (p.in_va) rowClass += ' in-va';
 
     let priceClass = 'vp-price';
     if (p.type === 'poc') priceClass += ' poc';
     else if (p.type === 'hvn') priceClass += ' hvn';
     else if (p.type === 'lvn') priceClass += ' lvn';
-
-    let volClass = 'vp-vol';
-    if (p.type === 'poc') volClass += ' poc';
-    else if (p.type === 'hvn') volClass += ' hvn';
-    else if (p.type === 'lvn') volClass += ' lvn';
 
     html += `
       <div class="${rowClass}">
@@ -1213,7 +1210,7 @@ function renderVP(profile, vah, val) {
             <div class="vp-bar-sell" style="width: ${sellPct}%;"></div>
           </div>
         </div>
-        <div class="${volClass}">${Math.round(p.volume / 1000)}k</div>
+        <div class="vp-vol ${p.type === 'poc' ? 'poc' : ''}">${Math.round(p.volume / 1000)}k</div>
       </div>
     `;
   });
@@ -1224,7 +1221,7 @@ function renderVP(profile, vah, val) {
 function renderCluster(clusters) {
   const container = document.getElementById('clusterContainer');
   if (!clusters || clusters.length === 0) {
-    container.innerHTML = '<div style="color:#5a5e68;padding:20px;text-align:center;">Waiting for data...</div>';
+    container.innerHTML = '<div style="color:#5a5e68;padding:20px;text-align:center;">Waiting...</div>';
     return;
   }
   const sorted = [...clusters].sort((a, b) => b.price_mid - a.price_mid);
@@ -1325,7 +1322,9 @@ function renderOrderBook(ob) {
   container.innerHTML = html;
 }
 
-// ═══ FETCHERS ═══
+// ═══════════════════════════════════════
+// FETCHERS
+// ═══════════════════════════════════════
 async function fetchCandles(tf) {
   try {
     const res = await fetch(`/api/candles?tf=${tf}&t=${Date.now()}`);
@@ -1479,7 +1478,9 @@ async function fetchStatus() {
   } catch (e) { }
 }
 
-// ═══ TOGGLE BUTTONS ═══
+// ═══════════════════════════════════════
+// TOGGLE BUTTONS
+// ═══════════════════════════════════════
 document.getElementById('bubblesToggle').addEventListener('click', () => {
   bubblesVisible = !bubblesVisible;
   const btn = document.getElementById('bubblesToggle');
@@ -1487,7 +1488,6 @@ document.getElementById('bubblesToggle').addEventListener('click', () => {
   if (bubblesVisible) btn.classList.add('opt-on');
   else btn.classList.remove('opt-on');
   renderAbsorptions(lastAbsorptions);
-  showNotif('Bubbles ' + (bubblesVisible ? 'enabled' : 'disabled'), 'info');
 });
 
 document.getElementById('footprintToggle').addEventListener('click', () => {
@@ -1497,7 +1497,6 @@ document.getElementById('footprintToggle').addEventListener('click', () => {
   if (footprintVisible) btn.classList.add('opt-on');
   else btn.classList.remove('opt-on');
   renderFootprint(lastFootprint);
-  showNotif('Footprint ' + (footprintVisible ? 'enabled' : 'disabled'), 'info');
 });
 
 document.getElementById('resetZoom').addEventListener('click', () => {
@@ -1511,24 +1510,13 @@ document.getElementById('resetZoom').addEventListener('click', () => {
     candleChart.timeScale().fitContent();
   }
   updateBubblePositions();
-  showNotif('Zoom reset', 'info');
 });
 
-// ═══ INIT ═══
-window.addEventListener('load', () => {
-  initCandleChart();
-  initDeltaChart();
-  fetchCandles(currentTF);
-  fetchDelta(currentTF);
-  fetchFootprint(currentTF);
-  fetchClusters();
-  fetchStatus();
-
-  setInterval(fetchStatus, 500);
-  setInterval(fetchClusters, 1000);
-  setInterval(() => fetchCandles(currentTF), 5000);
-  setInterval(() => fetchDelta(currentTF), 5000);
-  setInterval(() => fetchFootprint(currentTF), 5000);
+// Handle window resize
+window.addEventListener('resize', () => {
+  if (dashboardLoaded && selectedTemplate) {
+    applyTemplate(selectedTemplate);
+  }
 });
 </script>
 
