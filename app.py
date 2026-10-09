@@ -209,7 +209,6 @@ def refresh_data():
     while True:
         try:
             print(f"[REFRESH] Starting cycle...")
-            # Only fetch key timeframes for speed
             for tf in ["1m", "5m", "15m", "1h", "4h", "1d"]:
                 candles = fetch_candles(TF_MAP[tf], limit=200)
                 if candles:
@@ -232,13 +231,13 @@ def refresh_data():
                     print(f"[REFRESH] POC={result['poc']:.2f}")
         except Exception as e:
             print(f"[REFRESH ERROR] {e}")
-        time.sleep(60)  # 60 seconds (was 30)
+        time.sleep(60)
 
 def ticker():
     while True:
         try:
             t = bq.tick(SYMBOL)
-            if t:
+            if t and t.get("mid"):
                 cache["price"] = t.get("mid")
                 cache["bid"] = t.get("bid")
                 cache["ask"] = t.get("ask")
@@ -246,9 +245,27 @@ def ticker():
                 cache["spread"] = t.get("spread")
                 cache["last_update"] = time.strftime('%H:%M:%S')
                 print(f"[TICK] {cache['price']}")
+            else:
+                # ─── FALLBACK: Use last 1m candle close ───
+                c1m = cache["candles"].get("1m", [])
+                if c1m:
+                    last = c1m[-1]
+                    cache["price"] = last["close"]
+                    cache["bid"] = last["close"]
+                    cache["ask"] = last["close"]
+                    cache["spread"] = 0
+                    cache["change"] = 0
+                    cache["last_update"] = time.strftime('%H:%M:%S')
+                    print(f"[TICK-FALLBACK] {cache['price']}")
         except Exception as e:
             print(f"[TICK ERROR] {e}")
-        time.sleep(10)  # 10 seconds (was 2)
+            # ─── Fallback on error too ───
+            c1m = cache["candles"].get("1m", [])
+            if c1m:
+                last = c1m[-1]
+                cache["price"] = last["close"]
+                cache["last_update"] = time.strftime('%H:%M:%S')
+        time.sleep(10)
 
 # ═══════════════════════════════════════════════
 # ROUTES
@@ -282,7 +299,6 @@ def api_clusters():
 # ═══════════════════════════════════════════════
 print("[START] GEX Order Flow initial load...")
 
-# Initial data load
 for tf in ["1m", "5m", "15m", "1h", "4h", "1d"]:
     candles = fetch_candles(TF_MAP[tf], limit=200)
     if candles:
@@ -304,14 +320,11 @@ if h1:
         cache["profile"] = result["profile"]
         print(f"[START] POC={result['poc']:.2f}")
 
-# ═══ START BACKGROUND THREADS (MODULE LEVEL) ═══
+# ═══ BACKGROUND THREADS START ═══
 threading.Thread(target=refresh_data, daemon=True).start()
 threading.Thread(target=ticker, daemon=True).start()
 print("[START] Background threads started")
 
-# ═══════════════════════════════════════════════
-# LOCAL DEV SERVER (Sirf `python app.py` ke liye)
-# ═══════════════════════════════════════════════
 if __name__ == "__main__":
     print("\n[LOCAL] http://localhost:5000\n")
     app.run(host="0.0.0.0", port=5000, debug=False)
