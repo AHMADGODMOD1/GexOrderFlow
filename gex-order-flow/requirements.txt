@@ -1,0 +1,6 @@
+flask
+flask-cors
+biquote
+pandas
+numpy
+gunicorn==21.2.0
