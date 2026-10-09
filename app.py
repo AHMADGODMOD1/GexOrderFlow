@@ -29,26 +29,36 @@ cache = {
     "last_update": None,
 }
 
-def fetch_candles(tf, limit=200):
-    try:
-        raw = bq.ohlc(SYMBOL, interval=tf, limit=limit)
-        if not raw:
-            return []
-        candles = []
-        for row in raw:
-            candles.append({
-                "time": row['openTime'],
-                "open": float(row['open']),
-                "high": float(row['high']),
-                "low": float(row['low']),
-                "close": float(row['close']),
-                "volume": float(row.get('tickVolume', 0) or 0),
-            })
-        return candles
-    except Exception as e:
-        print(f"[CANDLE ERROR {tf}] {e}")
-        return []
+# ═══════════════════════════════════════════════
+# FETCH CANDLES
+# ═══════════════════════════════════════════════
+def fetch_candles(tf, limit=200, retries=3):
+    for attempt in range(retries):
+        try:
+            raw = bq.ohlc(SYMBOL, interval=tf, limit=limit)
+            if not raw:
+                print(f"[CANDLE EMPTY {tf}] attempt {attempt+1}")
+                time.sleep(2)
+                continue
+            candles = []
+            for row in raw:
+                candles.append({
+                    "time": row['openTime'],
+                    "open": float(row['open']),
+                    "high": float(row['high']),
+                    "low": float(row['low']),
+                    "close": float(row['close']),
+                    "volume": float(row.get('tickVolume', 0) or 0),
+                })
+            return candles
+        except Exception as e:
+            print(f"[CANDLE ERROR {tf} attempt {attempt+1}] {e}")
+            time.sleep(2)
+    return []
 
+# ═══════════════════════════════════════════════
+# BUILD CLUSTERS
+# ═══════════════════════════════════════════════
 def build_clusters(candles_1m, num_clusters=15):
     if not candles_1m or len(candles_1m) < 10:
         return []
@@ -123,6 +133,9 @@ def build_clusters(candles_1m, num_clusters=15):
 
     return clusters
 
+# ═══════════════════════════════════════════════
+# BUILD VOLUME PROFILE
+# ═══════════════════════════════════════════════
 def build_profile_from_candles(candles, bins=50):
     if not candles or len(candles) < 5:
         return None
@@ -189,17 +202,24 @@ def build_profile_from_candles(candles, bins=50):
 
     return {"poc": poc, "hvn": hvn, "lvn": lvn, "profile": profile_data}
 
+# ═══════════════════════════════════════════════
+# BACKGROUND THREADS
+# ═══════════════════════════════════════════════
 def refresh_data():
     while True:
         try:
-            for tf in TF_MAP.keys():
+            print(f"[REFRESH] Starting cycle...")
+            # Only fetch key timeframes for speed
+            for tf in ["1m", "5m", "15m", "1h", "4h", "1d"]:
                 candles = fetch_candles(TF_MAP[tf], limit=200)
                 if candles:
                     cache["candles"][tf] = candles
+                    print(f"[REFRESH] {tf}: {len(candles)} candles")
 
             c1m = cache["candles"].get("1m", [])
             if c1m:
                 cache["clusters"] = build_clusters(c1m, num_clusters=15)
+                print(f"[REFRESH] Clusters: {len(cache['clusters'])}")
 
             h1 = cache["candles"].get("1h", [])
             if h1:
@@ -209,10 +229,10 @@ def refresh_data():
                     cache["hvn"] = result["hvn"]
                     cache["lvn"] = result["lvn"]
                     cache["profile"] = result["profile"]
-                    print(f"[REFRESH] POC={result['poc']:.2f}, Clusters={len(cache['clusters'])}")
+                    print(f"[REFRESH] POC={result['poc']:.2f}")
         except Exception as e:
             print(f"[REFRESH ERROR] {e}")
-        time.sleep(30)
+        time.sleep(60)  # 60 seconds (was 30)
 
 def ticker():
     while True:
@@ -225,10 +245,14 @@ def ticker():
                 cache["change"] = t.get("dayDiffPercent")
                 cache["spread"] = t.get("spread")
                 cache["last_update"] = time.strftime('%H:%M:%S')
+                print(f"[TICK] {cache['price']}")
         except Exception as e:
             print(f"[TICK ERROR] {e}")
-        time.sleep(2)
+        time.sleep(10)  # 10 seconds (was 2)
 
+# ═══════════════════════════════════════════════
+# ROUTES
+# ═══════════════════════════════════════════════
 @app.route("/")
 def index():
     return render_template("index.html")
@@ -253,31 +277,41 @@ def api_candles():
 def api_clusters():
     return jsonify({"clusters": cache["clusters"]})
 
+# ═══════════════════════════════════════════════
+# INITIAL LOAD + BACKGROUND THREADS (MODULE LEVEL)
+# ═══════════════════════════════════════════════
+print("[START] GEX Order Flow initial load...")
+
+# Initial data load
+for tf in ["1m", "5m", "15m", "1h", "4h", "1d"]:
+    candles = fetch_candles(TF_MAP[tf], limit=200)
+    if candles:
+        cache["candles"][tf] = candles
+        print(f"[START] {tf}: {len(candles)} candles")
+
+c1m = cache["candles"].get("1m", [])
+if c1m:
+    cache["clusters"] = build_clusters(c1m, num_clusters=15)
+    print(f"[START] Clusters: {len(cache['clusters'])}")
+
+h1 = cache["candles"].get("1h", [])
+if h1:
+    result = build_profile_from_candles(h1)
+    if result:
+        cache["poc"] = result["poc"]
+        cache["hvn"] = result["hvn"]
+        cache["lvn"] = result["lvn"]
+        cache["profile"] = result["profile"]
+        print(f"[START] POC={result['poc']:.2f}")
+
+# ═══ START BACKGROUND THREADS (MODULE LEVEL) ═══
+threading.Thread(target=refresh_data, daemon=True).start()
+threading.Thread(target=ticker, daemon=True).start()
+print("[START] Background threads started")
+
+# ═══════════════════════════════════════════════
+# LOCAL DEV SERVER (Sirf `python app.py` ke liye)
+# ═══════════════════════════════════════════════
 if __name__ == "__main__":
-    print("[START] GEX Order Flow initial load...")
-    for tf in TF_MAP.keys():
-        candles = fetch_candles(TF_MAP[tf], limit=200)
-        if candles:
-            cache["candles"][tf] = candles
-            print(f"  [{tf}] {len(candles)} candles")
-
-    c1m = cache["candles"].get("1m", [])
-    if c1m:
-        cache["clusters"] = build_clusters(c1m, num_clusters=15)
-        print(f"[START] Clusters: {len(cache['clusters'])}")
-
-    h1 = cache["candles"].get("1h", [])
-    if h1:
-        result = build_profile_from_candles(h1)
-        if result:
-            cache["poc"] = result["poc"]
-            cache["hvn"] = result["hvn"]
-            cache["lvn"] = result["lvn"]
-            cache["profile"] = result["profile"]
-            print(f"[START] POC={result['poc']:.2f}")
-
-    threading.Thread(target=refresh_data, daemon=True).start()
-    threading.Thread(target=ticker, daemon=True).start()
-
-    print("\n[SERVER] http://localhost:5000\n")
+    print("\n[LOCAL] http://localhost:5000\n")
     app.run(host="0.0.0.0", port=5000, debug=False)
