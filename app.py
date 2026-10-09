@@ -214,15 +214,29 @@ def build_profile_from_candles(candles, bins=50):
 def refresh_data():
     while True:
         try:
-            for tf in ["1m", "5m", "15m", "1h", "4h", "1d"]:
+            # ─── 1m candles every cycle ───
+            candles_1m = fetch_candles(TF_MAP["1m"], limit=200)
+            if candles_1m:
+                cache["candles"]["1m"] = candles_1m
+                # Update price from 1m candle close (immediate fallback)
+                cache["price"] = candles_1m[-1]["close"]
+                if not cache["bid"]:
+                    cache["bid"] = candles_1m[-1]["close"] - 0.15
+                    cache["ask"] = candles_1m[-1]["close"] + 0.15
+                    cache["spread"] = 0.30
+
+            # ─── Other timeframes ───
+            for tf in ["5m", "15m", "1h", "4h", "1d"]:
                 candles = fetch_candles(TF_MAP[tf], limit=200)
                 if candles:
                     cache["candles"][tf] = candles
 
+            # ─── Clusters ───
             c1m = cache["candles"].get("1m", [])
             if c1m:
                 cache["clusters"] = build_clusters(c1m, num_clusters=15)
 
+            # ─── Profile from 1h ───
             h1 = cache["candles"].get("1h", [])
             if h1:
                 result = build_profile_from_candles(h1)
@@ -231,10 +245,10 @@ def refresh_data():
                     cache["hvn"] = result["hvn"]
                     cache["lvn"] = result["lvn"]
                     cache["profile"] = result["profile"]
-                    print(f"[REFRESH] POC={result['poc']:.2f}")
+                    print(f"[REFRESH] POC={result['poc']:.2f}, Price={cache['price']}")
         except Exception as e:
             print(f"[REFRESH ERROR] {e}")
-        time.sleep(30)
+        time.sleep(10)
 
 def ticker():
     global last_known_price, last_known_bid, last_known_ask, last_known_spread, last_known_change
@@ -250,7 +264,6 @@ def ticker():
                 cache["spread"] = t.get("spread")
                 cache["last_update"] = time.strftime('%H:%M:%S')
 
-                # Save to persistent vars
                 last_known_price = mid
                 last_known_bid = t.get("bid")
                 last_known_ask = t.get("ask")
@@ -266,18 +279,12 @@ def ticker():
                     cache["spread"] = last_known_spread
                     cache["change"] = last_known_change
                     cache["last_update"] = time.strftime('%H:%M:%S')
-                else:
-                    c1m = cache["candles"].get("1m", [])
-                    if c1m:
-                        cache["price"] = c1m[-1]["close"]
-                        cache["last_update"] = time.strftime('%H:%M:%S')
         except Exception as e:
             print(f"[TICK ERROR] {e}")
             if last_known_price:
                 cache["price"] = last_known_price
                 cache["bid"] = last_known_bid
                 cache["ask"] = last_known_ask
-                cache["last_update"] = time.strftime('%H:%M:%S')
         time.sleep(5)
 
 # ═══════════════════════════════════════════════
@@ -321,7 +328,11 @@ for tf in ["1m", "5m", "15m", "1h", "4h", "1d"]:
 c1m = cache["candles"].get("1m", [])
 if c1m:
     cache["clusters"] = build_clusters(c1m, num_clusters=15)
-    print(f"[START] Clusters: {len(cache['clusters'])}")
+    cache["price"] = c1m[-1]["close"]
+    cache["bid"] = c1m[-1]["close"] - 0.15
+    cache["ask"] = c1m[-1]["close"] + 0.15
+    cache["spread"] = 0.30
+    print(f"[START] Clusters: {len(cache['clusters'])}, Price: {cache['price']}")
 
 h1 = cache["candles"].get("1h", [])
 if h1:
